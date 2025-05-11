@@ -13,4 +13,15 @@ input:focus {
   outline: none !important;
   border: 1px solid #000 !important;
   box-shadow: none !important;
+}
+
+/* Personaliza el color del texto del input file */
+input[type="file"]::file-selector-button {
+  color: #6b7280; /* gray-500 */
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
 } 
