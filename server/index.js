@@ -99,6 +99,8 @@ app.post('/api/generate-app', upload.fields([
         restoreConsoleLogs();
       })
       .catch((err) => {
+        const errorMsg = typeof err === 'string' ? err : (err && err.message) ? err.message : JSON.stringify(err);
+        console.log('❌ Error en la generación: ' + errorMsg);
         processLogs[id].done = true;
         restoreConsoleLogs();
       });

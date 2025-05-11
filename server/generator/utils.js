@@ -21,7 +21,13 @@ const executeCommand = async (command, message, successMessage = 'Task completed
     exec(command, { cwd: projectPath }, (error, stdout, stderr) => {
       if (error) {
         // Log de error de spinner con mensaje más claro
-        const errorMsg = stderr || error.message || 'Error desconocido';
+        let errorMsg = stderr || error.message || 'Error desconocido';
+        if (
+          errorMsg.includes('Try using a new directory name') ||
+          errorMsg.includes('already exists')
+        ) {
+          errorMsg += '\nEs posible que ya exista una carpeta con ese nombre de app. Elimina la carpeta o elige otro nombre.';
+        }
         console.log(`SPINNER_FAIL: ${errorMsg}`);
         reject(errorMsg);
       } else {

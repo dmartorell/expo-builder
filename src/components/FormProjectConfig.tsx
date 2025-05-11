@@ -18,8 +18,10 @@ export default function FormProjectConfig({ onLog }: FormProjectConfigProps) {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData();
-    const projectName = form['projectName'].value;
-    const packageName = form['packageName'].value;
+    let projectName = form['projectName'].value.trim();
+    let packageName = form['packageName'].value.trim();
+    if (!projectName) projectName = 'my-expo-app';
+    if (!packageName) packageName = 'com.example.myexpoapp';
     formData.append('projectName', projectName);
     formData.append('packageName', packageName);
     if (iconIosRef.current?.files?.[0]) formData.append('iconIos', iconIosRef.current.files[0]);
@@ -27,14 +29,13 @@ export default function FormProjectConfig({ onLog }: FormProjectConfigProps) {
     if (iconNotificationRef.current?.files?.[0]) formData.append('iconNotification', iconNotificationRef.current.files[0]);
     if (iconSplashRef.current?.files?.[0]) formData.append('iconSplash', iconSplashRef.current.files[0]);
     try {
-      onLog?.('Enviando datos al backend...');
       const res = await fetch('http://localhost:4000/api/generate-app', {
         method: 'POST',
         body: formData,
       });
       const data = await res.json();
       if (data.ok && data.id) {
-        onLog?.('✅ Proceso iniciado. Mostrando logs...', data.id);
+        onLog?.('Proceso iniciado. Mostrando logs...', data.id);
       } else {
         onLog?.('❌ ' + (data.error || 'Error desconocido.'));
       }
@@ -45,6 +46,12 @@ export default function FormProjectConfig({ onLog }: FormProjectConfigProps) {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">Configura tu proyecto</h2>
+        <Button type="submit" className="bg-black text-white font-semibold hover:bg-gray-800 transition">
+          Generar App
+        </Button>
+      </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del proyecto</label>
         <Input
@@ -88,9 +95,6 @@ export default function FormProjectConfig({ onLog }: FormProjectConfigProps) {
         <p className="text-xs text-gray-400 mt-1">PNG 96x96</p>
       </div>
       <p className="text-xs text-gray-500 mt-2">Los iconos son opcionales. Si no se proporcionan, se utilizarán los iconos Alfred predeterminados.</p>
-      <Button type="submit" className="w-full bg-black text-white font-semibold hover:bg-gray-800 transition">
-        Generar App
-      </Button>
     </form>
   );
 } 

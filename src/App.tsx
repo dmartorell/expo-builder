@@ -4,7 +4,12 @@ import TerminalLogs from './components/TerminalLogs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 
 export default function App() {
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<string[]>([
+    ...Array(40).fill('Este es un log de prueba para ver el scroll en la terminal.').map((msg, i) => `${i + 1}: ${msg}`),
+    'SPINNER_START: Proceso de prueba con spinner...',
+    ...Array(10).fill('Log intermedio...'),
+    'SPINNER_SUCCESS: Proceso de prueba finalizado.'
+  ]);
   const [processId, setProcessId] = useState<string | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const lastLogCountRef = useRef<number>(0);
@@ -36,16 +41,6 @@ export default function App() {
         }
       }
     }, 1000);
-  };
-
-  const handleClearLogs = () => {
-    setLogs([]);
-    setProcessId(null);
-    lastLogCountRef.current = 0;
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
   };
 
   // Limpiar el intervalo cuando el componente se desmonta
@@ -86,17 +81,32 @@ export default function App() {
         </div>
         <TabsContent value="board">
           {/* Main layout */}
-          <main className="flex flex-col md:flex-row gap-6 p-8 max-w-7xl mx-auto">
+          <main className="grid md:grid-cols-2 gap-6 p-8 max-w-7xl mx-auto items-stretch">
             {/* Formulario */}
-            <section className="flex-1 bg-white rounded-xl shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Configura tu proyecto</h2>
+            <section className="bg-white rounded-xl shadow p-6 flex flex-col h-[820px] overflow-y-auto">
               <FormProjectConfig onLog={handleLog} />
             </section>
             {/* Terminal */}
-            <aside className="w-full md:w-1/2 bg-black rounded-xl shadow p-6 text-green-400 font-mono text-sm font-normal min-h-[300px] flex flex-col">
-              <h2 className="text-lg font-semibold text-white mb-4">Logs</h2>
-              <div className="flex-1 overflow-y-auto">
-                <TerminalLogs logs={logs} onClearLogs={handleClearLogs} />
+            <aside className="bg-black rounded-xl shadow p-6 text-green-400 font-mono text-sm font-normal flex flex-col h-[820px] min-h-0">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-gray-300" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
+                    <polyline points="8 9 12 13 8 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="14" y1="17" x2="16" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  Logs
+                </h2>
+                <button
+                  className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 text-xs"
+                  onClick={() => setLogs([])}
+                  type="button"
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <TerminalLogs logs={logs} />
               </div>
             </aside>
           </main>
