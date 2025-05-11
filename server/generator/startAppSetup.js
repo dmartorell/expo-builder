@@ -18,6 +18,7 @@ const {
 } = require('./modifyProjectFiles');
 const fs = require('fs');
 const path = require('path');
+const archiver = require('archiver');
 
 /**
  * Genera una app Expo usando los datos recibidos
@@ -78,6 +79,42 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
       '.'
     );
     await addAndCommitChanges(projectPath);
+
+    // Eliminar node_modules
+    console.log('Eliminando node_modules...');
+    await executeCommand(
+      `rm -rf ${projectPath}/node_modules`,
+      'Eliminando node_modules...',
+      'node_modules eliminado.',
+      null,
+      '.'
+    );
+
+    // Crear carpeta builds si no existe
+    const buildsDir = path.join(__dirname, '..', 'builds');
+    if (!fs.existsSync(buildsDir)) {
+      fs.mkdirSync(buildsDir, { recursive: true });
+    }
+
+    // Crear archivo ZIP
+    const zipPath = path.join(buildsDir, `${parsedAppName}.zip`);
+    const output = fs.createWriteStream(zipPath);
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Máxima compresión
+    });
+
+    output.on('close', () => {
+      console.log(`Archivo ZIP creado: ${zipPath}`);
+      console.log(`Tamaño total: ${(archive.pointer() / 1024 / 1024).toFixed(2)} MB`);
+    });
+
+    archive.on('error', (err) => {
+      throw err;
+    });
+
+    archive.pipe(output);
+    archive.directory(projectPath, parsedAppName);
+    await archive.finalize();
 
     // Limpia la carpeta uploads
     cleanUploadsFolder();

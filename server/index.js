@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { generateApp } = require('./generator/generateApp');
+const fs = require('fs');
 
 const app = express();
 const port = 4000;
@@ -127,6 +128,44 @@ app.get('/api/logs/:id', (req, res) => {
     originalConsoleError('Error in /api/logs/:id:', error);
     res.status(500).json({ ok: false, error: error.message });
   }
+});
+
+// Endpoint para obtener la lista de builds
+app.get('/api/builds', (req, res) => {
+  const buildsDir = path.join(__dirname, 'builds');
+  
+  // Verificar si existe el directorio
+  if (!fs.existsSync(buildsDir)) {
+    return res.json({ builds: [] });
+  }
+
+  // Obtener lista de archivos ZIP
+  const files = fs.readdirSync(buildsDir)
+    .filter(file => file.endsWith('.zip'))
+    .map(file => ({
+      name: file.replace('.zip', ''),
+      filename: file
+    }));
+
+  res.json({ builds: files });
+});
+
+// Endpoint para servir archivos ZIP
+app.get('/api/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'builds', filename);
+  
+  // Verificar que el archivo existe
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Archivo no encontrado' });
+  }
+
+  // Enviar el archivo
+  res.download(filePath, filename, (err) => {
+    if (err) {
+      res.status(500).json({ error: 'Error al descargar el archivo' });
+    }
+  });
 });
 
 // Manejo de errores de multer
