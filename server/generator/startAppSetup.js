@@ -78,6 +78,10 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
       '.'
     );
     await addAndCommitChanges(projectPath);
+
+    // Limpia la carpeta uploads
+    cleanUploadsFolder();
+
     console.log('Proceso finalizado.');
   } catch (error) {
     console.error('❌ Error en la generación: ' + error.message);
@@ -128,6 +132,22 @@ function moveUploadedIconsToAssets(projectPath, iconPaths) {
     } else {
       console.log('iconSplash no existe:', iconPaths.iconSplash);
     }
+  }
+}
+
+// Nueva función para limpiar la carpeta uploads
+function cleanUploadsFolder() {
+  const uploadsDir = path.join(__dirname, '..', 'uploads');
+  if (fs.existsSync(uploadsDir)) {
+    fs.readdirSync(uploadsDir).forEach(file => {
+      const filePath = path.join(uploadsDir, file);
+      try {
+        fs.unlinkSync(filePath);
+        console.log('Archivo eliminado de uploads:', filePath);
+      } catch (err) {
+        console.error('Error eliminando archivo de uploads:', filePath, err);
+      }
+    });
   }
 }
 
