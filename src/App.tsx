@@ -4,12 +4,7 @@ import TerminalLogs from './components/TerminalLogs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 
 export default function App() {
-  const [logs, setLogs] = useState<string[]>([
-    ...Array(40).fill('Este es un log de prueba para ver el scroll en la terminal.').map((msg, i) => `${i + 1}: ${msg}`),
-    'SPINNER_START: Proceso de prueba con spinner...',
-    ...Array(10).fill('Log intermedio...'),
-    'SPINNER_SUCCESS: Proceso de prueba finalizado.'
-  ]);
+  const [logs, setLogs] = useState<string[]>([]);
   const [processId, setProcessId] = useState<string | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const lastLogCountRef = useRef<number>(0);
@@ -81,7 +76,7 @@ export default function App() {
         </div>
         <TabsContent value="board">
           {/* Main layout */}
-          <main className="grid md:grid-cols-2 gap-6 p-8 max-w-7xl mx-auto items-stretch">
+          <main className="grid md:grid-cols-2 gap-6 py-8 max-w-7xl mx-auto items-stretch">
             {/* Formulario */}
             <section className="bg-white rounded-xl shadow p-6 flex flex-col h-[820px] overflow-y-auto">
               <FormProjectConfig onLog={handleLog} />

@@ -73,7 +73,7 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
       '.'
     );
     await addAndCommitChanges(projectPath);
-    console.log('🎉 Proceso finalizado.');
+    console.log('Proceso finalizado.');
   } catch (error) {
     console.error('❌ Error en la generación: ' + error.message);
     throw error;

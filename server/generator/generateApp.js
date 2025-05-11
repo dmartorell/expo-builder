@@ -18,7 +18,7 @@ async function generateApp({ appName, packageName, iconPaths = {} }) {
       iconPaths
     });
 
-    console.log('🎉 Proceso finalizado.');
+    console.log('Proceso finalizado.');
   } catch (error) {
     console.error('❌ Error en la generación: ' + error.message);
     throw error;

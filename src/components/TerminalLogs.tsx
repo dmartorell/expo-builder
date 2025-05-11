@@ -7,6 +7,11 @@ interface TerminalLogsProps {
 
 const Check = () => <span className="mr-2 text-green-500 text-2xl">✓</span>;
 
+// Función para limpiar códigos ANSI
+const cleanAnsiCodes = (text: string) => {
+  return text.replace(/\[\d+m/g, '').replace(/\[39m/g, '');
+};
+
 // Paso de la terminal
 interface Step {
   type: 'spinner' | 'log';
@@ -19,26 +24,15 @@ export default function TerminalLogs({ logs }: TerminalLogsProps) {
 
   // Efecto para auto-scroll
   useEffect(() => {
-    const scrollToBottom = () => {
-      if (containerRef.current && logs.length > 0) {
-        const container = containerRef.current;
-        
-        // Solo hacer scroll del contenedor hijo
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    };
-
-    // Ejecutar inmediatamente
-    scrollToBottom();
-    
-    // Y también después de un pequeño retraso para asegurar que el contenido se haya renderizado
-    const timeoutId = setTimeout(scrollToBottom, 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [logs]);
+    if (containerRef.current && logs.length > 0) {
+      // Usar requestAnimationFrame para asegurar que el DOM se ha actualizado
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+      });
+    }
+  }, [logs]); // Se ejecuta cada vez que cambian los logs
 
   // Manejador de scroll para propagar al padre
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -65,30 +59,32 @@ export default function TerminalLogs({ logs }: TerminalLogsProps) {
       if (log === lastLog) return;
       lastLog = log;
 
-      if (log.startsWith('SPINNER_START:')) {
+      // Limpiar códigos ANSI del log
+      const cleanLog = cleanAnsiCodes(log);
+
+      if (cleanLog.startsWith('SPINNER_START:')) {
         // Si hay un spinner activo, márcalo como fail (o podrías cerrarlo de otra forma)
         const lastSpinner = [...result].reverse().find(s => s.type === 'spinner' && s.status === 'start');
         if (lastSpinner) {
-          console.log('Found active spinner, marking as fail:', lastSpinner); // Debug log
           lastSpinner.status = 'fail';
         }
-        const newSpinner: Step = { type: 'spinner', status: 'start', message: log.replace('SPINNER_START:', '').trim() };
-        console.log('Creating new spinner:', newSpinner); // Debug log
+        const newSpinner: Step = { type: 'spinner', status: 'start', message: cleanLog.replace('SPINNER_START:', '').trim() };
         result.push(newSpinner);
-      } else if (log.startsWith('SPINNER_SUCCESS:')) {
+      } else if (cleanLog.startsWith('SPINNER_SUCCESS:')) {
         // Marca el último spinner activo como success
         const lastSpinner = [...result].reverse().find(s => s.type === 'spinner' && s.status === 'start');
         if (lastSpinner) {
-          console.log('Marking spinner as success:', lastSpinner); // Debug log
           lastSpinner.status = 'success';
         }
-      } else if (log.startsWith('SPINNER_FAIL:')) {
+      } else if (cleanLog.startsWith('SPINNER_FAIL:')) {
         // Marca el último spinner activo como fail
         const lastSpinner = [...result].reverse().find(s => s.type === 'spinner' && s.status === 'start');
-        if (lastSpinner) lastSpinner.status = 'fail';
+        if (lastSpinner) {
+          lastSpinner.status = 'fail';
+        }
       } else {
         // Log normal
-        result.push({ type: 'log', message: log });
+        result.push({ type: 'log', message: cleanLog });
       }
     });
     return result;
@@ -118,9 +114,25 @@ export default function TerminalLogs({ logs }: TerminalLogsProps) {
                 return <div key={i} className="flex items-center text-red-400">{step.message}</div>;
               }
             }
-            // Log de error: si empieza por 'Error en la generación:' o '❌', mostrar en rojo
-            if (step.message.startsWith('Error en la generación:') || step.message.startsWith('❌')) {
-              return <div key={i} className="flex items-center text-red-400"><span className="mr-2 text-2xl">✕</span>{step.message.replace('❌', '').trim()}</div>;
+            // Log de error: si empieza por 'Error en la generación:', '❌' o contiene '✖', mostrar en rojo
+            if (step.message.startsWith('Error en la generación:') || 
+                step.message.startsWith('❌') || 
+                step.message.includes('✖')) {
+              return <div key={i} className="flex items-center text-red-400">
+                {step.message.replace('❌', '').replace('✖', '').trim()}
+              </div>;
+            }
+            // Log con check (solo para mensajes que no vienen del script)
+            if (step.message.includes('✔') && !step.message.includes('[')) {
+              return <div key={i} className="flex items-center">{step.message.replace('✔', '').trim()}</div>;
+            }
+            // Log con emoji de celebración (sin icono)
+            if (step.message.includes('🎉')) {
+              return <div key={i}>{step.message}</div>;
+            }
+            // Log del script (solo texto)
+            if (step.message.includes('[')) {
+              return <div key={i}>{step.message.replace('✔', '').trim()}</div>;
             }
             // Log normal
             return <div key={i}>{step.message}</div>;
