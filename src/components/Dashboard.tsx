@@ -12,7 +12,7 @@ interface FormData {
 }
 
 interface DashboardProps {
-  onLog: (log: string, processIdFromForm?: string) => void;
+  onLog: (log: string, processId?: string) => void;
   logs: string[];
   setLogs: React.Dispatch<React.SetStateAction<string[]>>;
   formData: FormData;
