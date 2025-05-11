@@ -16,6 +16,8 @@ const {
   updateAppTsx,
   addEasIgnore,
 } = require('./modifyProjectFiles');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Genera una app Expo usando los datos recibidos
@@ -40,6 +42,9 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
       null,
       '.'
     );
+
+    // Mueve los iconos subidos a la carpeta assets
+    moveUploadedIconsToAssets(projectPath, iconPaths);
 
     updateAppJson(projectPath, parsedAppName, packageName);
     removeFieldsFromPackageJson(projectPath);
@@ -77,6 +82,52 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
   } catch (error) {
     console.error('❌ Error en la generación: ' + error.message);
     throw error;
+  }
+}
+
+// Mueve los iconos subidos a la carpeta assets del proyecto generado, con logs de depuración
+function moveUploadedIconsToAssets(projectPath, iconPaths) {
+  const assetsDir = path.join(projectPath, 'assets');
+  if (!fs.existsSync(assetsDir)) {
+    fs.mkdirSync(assetsDir, { recursive: true });
+    console.log('Carpeta assets creada:', assetsDir);
+  }
+
+  // iconIos
+  if (iconPaths.iconIos) {
+    if (fs.existsSync(iconPaths.iconIos)) {
+      fs.copyFileSync(iconPaths.iconIos, path.join(assetsDir, 'icon.png'));
+      console.log('iconIos copiado a assets/icon.png');
+    } else {
+      console.log('iconIos no existe:', iconPaths.iconIos);
+    }
+  }
+  // iconAndroid
+  if (iconPaths.iconAndroid) {
+    if (fs.existsSync(iconPaths.iconAndroid)) {
+      fs.copyFileSync(iconPaths.iconAndroid, path.join(assetsDir, 'adaptive-icon.png'));
+      console.log('iconAndroid copiado a assets/adaptive-icon.png');
+    } else {
+      console.log('iconAndroid no existe:', iconPaths.iconAndroid);
+    }
+  }
+  // iconNotification
+  if (iconPaths.iconNotification) {
+    if (fs.existsSync(iconPaths.iconNotification)) {
+      fs.copyFileSync(iconPaths.iconNotification, path.join(assetsDir, 'notification-icon.png'));
+      console.log('iconNotification copiado a assets/notification-icon.png');
+    } else {
+      console.log('iconNotification no existe:', iconPaths.iconNotification);
+    }
+  }
+  // iconSplash
+  if (iconPaths.iconSplash) {
+    if (fs.existsSync(iconPaths.iconSplash)) {
+      fs.copyFileSync(iconPaths.iconSplash, path.join(assetsDir, 'splash-icon.png'));
+      console.log('iconSplash copiado a assets/splash-icon.png');
+    } else {
+      console.log('iconSplash no existe:', iconPaths.iconSplash);
+    }
   }
 }
 
