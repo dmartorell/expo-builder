@@ -15,14 +15,18 @@ const logError = async (message) => {
 // Función para ejecutar comandos en la terminal de manera asíncrona
 const executeCommand = async (command, message, successMessage = 'Task completed successfully.', _, projectPath = '.') => {
   return new Promise((resolve, reject) => {
-    console.log(message);
+    // Log de inicio de spinner
+    console.log(`SPINNER_START: ${message}`);
 
     exec(command, { cwd: projectPath }, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error: ${stderr}`);
-        reject(stderr);
+        // Log de error de spinner con mensaje más claro
+        const errorMsg = stderr || error.message || 'Error desconocido';
+        console.log(`SPINNER_FAIL: ${errorMsg}`);
+        reject(errorMsg);
       } else {
-        console.log(successMessage);
+        // Log de éxito de spinner
+        console.log(`SPINNER_SUCCESS: ${successMessage}`);
         resolve(stdout);
       }
     });
