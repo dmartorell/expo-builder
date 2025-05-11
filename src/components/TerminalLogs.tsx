@@ -1,12 +1,31 @@
 import React from 'react';
 
-export default function TerminalLogs() {
+interface TerminalLogsProps {
+  logs?: string[];
+  onClearLogs?: () => void;
+}
+
+export default function TerminalLogs({ logs = [], onClearLogs }: TerminalLogsProps) {
   return (
-    <div className="h-full overflow-y-auto space-y-2">
-      <div className="text-green-400">$ yarn create-app</div>
-      <div className="text-white">✔ Proyecto creado correctamente</div>
-      <div className="text-red-400">✖ Error: Falta el icono de la app</div>
-      <div className="text-yellow-400">⚠ Advertencia: El nombre del package es opcional</div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 space-y-2">
+        {logs.length === 0 ? (
+          <div className="text-gray-500">No hay mensajes aún.</div>
+        ) : (
+          logs.map((log, i) => (
+            <div key={i}>{log}</div>
+          ))
+        )}
+      </div>
+      <div className="flex justify-end mt-4">
+        <button
+          type="button"
+          onClick={onClearLogs}
+          className="px-6 py-1 bg-gray-800 text-white text-xs rounded hover:bg-gray-700 transition"
+        >
+          Clear
+        </button>
+      </div>
     </div>
   );
 } 

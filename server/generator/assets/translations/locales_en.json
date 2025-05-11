@@ -1,0 +1,8 @@
+{
+  "NSCameraUsageDescription": "We need access to your camera to capture images and scan QR codes.",
+  "NSLocationAlwaysAndWhenInUseUsageDescription": "We need access to your location to ensure that access is made within a range of 150 meters, even when the app is not in use.",
+  "NSLocationAlwaysUsageDescription": "We need access to your location to ensure that access is made within a range of 150 meters.",
+  "NSLocationWhenInUseUsageDescription": "We need access to your location to ensure that access is made within a range of 150 meters.",
+  "NSPhotoLibraryAddUsageDescription": "We need permission to save images to your gallery.",
+  "NSPhotoLibraryUsageDescription": "We need access to your gallery to select images."
+}

@@ -1,9 +1,62 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import FormProjectConfig from './components/FormProjectConfig';
 import TerminalLogs from './components/TerminalLogs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 
 export default function App() {
+  const [logs, setLogs] = useState<string[]>([]);
+  const [processId, setProcessId] = useState<string | null>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const lastLogCountRef = useRef<number>(0);
+
+  const handleLog = (log: string, processIdFromForm?: string) => {
+    setLogs(prev => [...prev, log]);
+    if (processIdFromForm) {
+      setProcessId(processIdFromForm);
+      startPolling(processIdFromForm);
+    }
+  };
+
+  const startPolling = (id: string) => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    lastLogCountRef.current = 0;
+    pollingRef.current = setInterval(async () => {
+      const res = await fetch(`http://localhost:4000/api/logs/${id}`);
+      const data = await res.json();
+      if (data.ok) {
+        // Solo añadir los nuevos logs
+        if (data.logs.length > lastLogCountRef.current) {
+          const newLogs = data.logs.slice(lastLogCountRef.current);
+          setLogs(prev => [...prev, ...newLogs]);
+          lastLogCountRef.current = data.logs.length;
+        }
+        if (data.done) {
+          clearInterval(pollingRef.current!);
+          pollingRef.current = null;
+        }
+      }
+    }, 1000);
+  };
+
+  const handleClearLogs = () => {
+    setLogs([]);
+    setProcessId(null);
+    lastLogCountRef.current = 0;
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  };
+
+  // Limpiar el intervalo cuando el componente se desmonta
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -37,12 +90,14 @@ export default function App() {
             {/* Formulario */}
             <section className="flex-1 bg-white rounded-xl shadow p-6">
               <h2 className="text-xl font-semibold mb-4">Configura tu proyecto</h2>
-              <FormProjectConfig />
+              <FormProjectConfig onLog={handleLog} />
             </section>
             {/* Terminal */}
-            <aside className="w-full md:w-1/2 bg-black rounded-xl shadow p-6 text-green-400 font-mono text-sm font-normal min-h-[300px]">
-              <h2 className="text-lg font-semibold text-white mb-4">Terminal</h2>
-              <TerminalLogs />
+            <aside className="w-full md:w-1/2 bg-black rounded-xl shadow p-6 text-green-400 font-mono text-sm font-normal min-h-[300px] flex flex-col">
+              <h2 className="text-lg font-semibold text-white mb-4">Logs</h2>
+              <div className="flex-1 overflow-y-auto">
+                <TerminalLogs logs={logs} onClearLogs={handleClearLogs} />
+              </div>
             </aside>
           </main>
         </TabsContent>

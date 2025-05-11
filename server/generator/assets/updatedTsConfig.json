@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "strict": true,
+    "types": [
+      "node"
+    ]
+  },
+  "extends": "./node_modules/@tsconfig/react-native/tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "app.config.ts",
+    "eslint.config.mjs"
+  ]
+}

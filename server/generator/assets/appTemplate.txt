@@ -1,0 +1,50 @@
+import {
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { BodyRegularText, BodySemiBoldText } from '@alfred_developes/alfred-ui-native-components/ui';
+import { name } from './package.json';
+
+export default function App () {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{name}</Text>
+      <View style={styles.content}>
+        <BodySemiBoldText>{'What\'s next?'}</BodySemiBoldText>
+        <BodyRegularText>
+          {'Take a look at the documentation and get your ass moving!'}
+        </BodyRegularText>
+      </View>
+      <StatusBar style={'dark'} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    gap: 12,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  content: {
+    marginTop: 36,
+    gap: 12,
+  },
+  title: {
+    color: 'white',
+    backgroundColor: 'black',
+    fontSize: 28,
+    padding: 18,
+    transform: [{ rotate: '4deg' }],
+    flexWrap: 'wrap',
+  },
+  linkText: {
+    color: 'blue',
+    fontSize: 16,
+  },
+});

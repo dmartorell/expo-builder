@@ -1,0 +1,77 @@
+# Dependencies
+node_modules/
+/yarn.lock
+/package-lock.json
+
+# Build outputs
+dist/
+lib/
+web-build/
+target/
+*.class
+*.py[cod]
+
+# Expo
+.expo/
+
+# iOS
+/ios/build/
+/ios/Pods/
+/ios/Podfile.lock
+/ios/*.xcworkspace/
+*.xcuserdata
+*.mobileprovision
+
+# Android
+/android/local.properties
+/android/.gradle/
+/android/app/build/
+
+# IDE
+.idea/
+.metro-health-check*
+
+# Debug & Logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+TEST*.xml
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Keys & Certificates
+*.orig.*
+*.jks
+*.p8 
+*.p12
+*.key
+*.pem
+
+# Environment
+.env*.local
+*.tsbuildinfo
+.npmrc
+
+# Media
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
+
+# Applications
+*.app
+*.exe
+*.war
+*.jar
+
+# Additional ignores specific to EAS builds
+
+# Ignore native directories (if you are using EAS Build)
+/android
+/ios
+
