@@ -2,9 +2,10 @@ import React from 'react';
 
 interface TerminalHeaderProps {
   onClear: () => void;
+  hasLogs: boolean;
 }
 
-export default function TerminalHeader({ onClear }: TerminalHeaderProps) {
+export default function TerminalHeader({ onClear, hasLogs }: TerminalHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -15,13 +16,15 @@ export default function TerminalHeader({ onClear }: TerminalHeaderProps) {
         </svg>
         Logs
       </h2>
-      <button
-        className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 text-xs"
-        onClick={onClear}
-        type="button"
-      >
-        Clear
-      </button>
+      {hasLogs && (
+        <button
+          onClick={onClear}
+          className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 text-xs"
+          type="button"
+        >
+          Clear
+        </button>
+      )}
     </div>
   );
 } 

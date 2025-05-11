@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { ExpoIcon } from './ui/ExpoIcon';
 
 export default function Layout({
   dashboardContent,
@@ -15,10 +16,7 @@ export default function Layout({
       {/* Header con logo de Expo */}
       <header className="px-8 py-6 border-b bg-white flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-          <svg width="32" height="32" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="128" cy="128" r="128" fill="#000" />
-            <path d="M128 60L196 196H60L128 60Z" fill="#fff"/>
-          </svg>
+          <ExpoIcon />
           Expo App Generator
         </h1>
         <nav>{/* Aquí puedes añadir navegación si lo necesitas */}</nav>

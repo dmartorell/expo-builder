@@ -3,11 +3,22 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import ImageFileInput from './ui/ImageFileInput';
 
-interface FormProps {
-  onLog?: (log: string, processId?: string) => void;
+interface FormData {
+  projectName: string;
+  packageName: string;
+  iconIos: File | null;
+  iconAndroid: File | null;
+  iconNotification: File | null;
+  iconSplash: File | null;
 }
 
-export default function Form({ onLog }: FormProps) {
+interface FormProps {
+  onLog?: (log: string, processId?: string) => void;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+}
+
+export default function Form({ onLog, formData, setFormData }: FormProps) {
   // Refs para los inputs file
   const iconIosRef = useRef<HTMLInputElement>(null);
   const iconAndroidRef = useRef<HTMLInputElement>(null);
@@ -16,22 +27,21 @@ export default function Form({ onLog }: FormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData();
-    let projectName = form['projectName'].value.trim();
-    let packageName = form['packageName'].value.trim();
+    const formDataToSend = new FormData();
+    let projectName = formData.projectName.trim();
+    let packageName = formData.packageName.trim();
     if (!projectName) projectName = 'my-expo-app';
     if (!packageName) packageName = 'com.example.myexpoapp';
-    formData.append('projectName', projectName);
-    formData.append('packageName', packageName);
-    if (iconIosRef.current?.files?.[0]) formData.append('iconIos', iconIosRef.current.files[0]);
-    if (iconAndroidRef.current?.files?.[0]) formData.append('iconAndroid', iconAndroidRef.current.files[0]);
-    if (iconNotificationRef.current?.files?.[0]) formData.append('iconNotification', iconNotificationRef.current.files[0]);
-    if (iconSplashRef.current?.files?.[0]) formData.append('iconSplash', iconSplashRef.current.files[0]);
+    formDataToSend.append('projectName', projectName);
+    formDataToSend.append('packageName', packageName);
+    if (formData.iconIos) formDataToSend.append('iconIos', formData.iconIos);
+    if (formData.iconAndroid) formDataToSend.append('iconAndroid', formData.iconAndroid);
+    if (formData.iconNotification) formDataToSend.append('iconNotification', formData.iconNotification);
+    if (formData.iconSplash) formDataToSend.append('iconSplash', formData.iconSplash);
     try {
       const res = await fetch('http://localhost:4000/api/generate-app', {
         method: 'POST',
-        body: formData,
+        body: formDataToSend,
       });
       const data = await res.json();
       if (data.ok && data.id) {
@@ -42,6 +52,16 @@ export default function Form({ onLog }: FormProps) {
     } catch (err) {
       onLog?.('❌ Error de red o backend.');
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof FormData) => {
+    const file = e.target.files?.[0] || null;
+    setFormData(prev => ({ ...prev, [field]: file }));
   };
 
   return (
@@ -58,6 +78,8 @@ export default function Form({ onLog }: FormProps) {
           name="projectName"
           type="text"
           placeholder="my-expo-app"
+          value={formData.projectName}
+          onChange={handleInputChange}
         />
         <p className="text-xs text-gray-400 mt-1">Este nombre se mostrará debajo del icono de la app.</p>
       </div>
@@ -67,31 +89,49 @@ export default function Form({ onLog }: FormProps) {
           name="packageName"
           type="text"
           placeholder="com.example.myexpoapp"
+          value={formData.packageName}
+          onChange={handleInputChange}
         />
         <p className="text-xs text-gray-400 mt-1">Identificador que Google y Apple utilizarán para gestionar la app en sus tiendas.</p>
       </div>
       {/* Icono de App (iOS) */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Icono de App (iOS)</label>
-        <ImageFileInput id="icon-ios" ref={iconIosRef} />
+        <ImageFileInput 
+          id="icon-ios" 
+          ref={iconIosRef}
+          onChange={(e) => handleFileChange(e, 'iconIos')}
+        />
         <p className="text-xs text-gray-400 mt-1">PNG 1024x1024</p>
       </div>
       {/* Icono de App (Android) */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Icono de App (Android)</label>
-        <ImageFileInput id="icon-android" ref={iconAndroidRef} />
+        <ImageFileInput 
+          id="icon-android" 
+          ref={iconAndroidRef}
+          onChange={(e) => handleFileChange(e, 'iconAndroid')}
+        />
         <p className="text-xs text-gray-400 mt-1">PNG 1024x1024 <span className="italic">transparente</span></p>
       </div>
       {/* Icono de Splash */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Icono de Splash</label>
-        <ImageFileInput id="icon-splash" ref={iconSplashRef} />
+        <ImageFileInput 
+          id="icon-splash" 
+          ref={iconSplashRef}
+          onChange={(e) => handleFileChange(e, 'iconSplash')}
+        />
         <p className="text-xs text-gray-400 mt-1">PNG 1242x2436 <span className="italic">transparente</span></p>
       </div>
       {/* Icono de Notificación */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Icono de Notificación</label>
-        <ImageFileInput id="icon-notification" ref={iconNotificationRef} />
+        <ImageFileInput 
+          id="icon-notification" 
+          ref={iconNotificationRef}
+          onChange={(e) => handleFileChange(e, 'iconNotification')}
+        />
         <p className="text-xs text-gray-400 mt-1">PNG 96x96</p>
       </div>
       <p className="text-xs text-gray-500 mt-2">Los iconos son opcionales. Si no se proporcionan, se utilizarán los iconos Alfred predeterminados.</p>

@@ -4,10 +4,11 @@ interface ImageFileInputProps {
   id: string;
   accept?: string;
   className?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const ImageFileInput = forwardRef<HTMLInputElement, ImageFileInputProps>(
-  ({ id, accept = 'image/png', className = '' }, ref) => {
+  ({ id, accept = 'image/png', className = '', onChange }, ref) => {
     const [fileName, setFileName] = useState<string>('');
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -17,6 +18,7 @@ const ImageFileInput = forwardRef<HTMLInputElement, ImageFileInputProps>(
       } else {
         setFileName('');
       }
+      onChange?.(e);
     };
 
     return (

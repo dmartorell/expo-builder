@@ -1,10 +1,7 @@
-import React from 'react';
-
 export default function Documentation() {
   return (
     <div className="p-8 max-w-3xl mx-auto text-gray-800">
       <h1 className="text-3xl font-bold mb-6">Guía de uso del generador de apps</h1>
-
       <div className="mb-8">
         <div className="mb-2 text-sm text-gray-500 italic">
           Si ya has generado la app y la tienes instalada en el simulador ve directamente al punto 2.
@@ -120,7 +117,7 @@ npm install --global eas-cli`}
           <li>production</li>
         </ul>
         <p>Sustituye el código del archivo por este otro:</p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-xs overflow-x-auto">
+        <pre className="bg-gray-100 rounded p-2 my-2 text-sm overflow-x-auto whitespace-pre-wrap break-all">
 {`{
   "build": {
     "development": {
@@ -280,7 +277,7 @@ plugins: [
         <p>
           Una vez generado el esqueleto básico de la app siguiendo el esquema de hooks, components, constants, contexts... es posible que, al hacer build, aparezca un error:
         </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
+        <pre className="bg-gray-100 rounded p-2 my-2 text-sm whitespace-pre-wrap break-all">
 {`Invariant Violation: new NativeEventEmitter() requires a non-null argument., js engine: hermes`}
         </pre>
         <p>
