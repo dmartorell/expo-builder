@@ -1,13 +1,13 @@
 import React, { useRef } from 'react';
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import ImageFileInput from "./ImageFileInput";
+import ImageFileInput from './ui/ImageFileInput';
 
-interface FormProjectConfigProps {
+interface FormProps {
   onLog?: (log: string, processId?: string) => void;
 }
 
-export default function FormProjectConfig({ onLog }: FormProjectConfigProps) {
+export default function Form({ onLog }: FormProps) {
   // Refs para los inputs file
   const iconIosRef = useRef<HTMLInputElement>(null);
   const iconAndroidRef = useRef<HTMLInputElement>(null);
