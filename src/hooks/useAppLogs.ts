@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { API_ENDPOINTS } from '../config/api';
 
 export const useAppLogs = () => {
   const [logs, setLogs] = useState<string[]>([]);
@@ -9,7 +10,7 @@ export const useAppLogs = () => {
     if (pollingRef.current) clearInterval(pollingRef.current);
     lastLogCountRef.current = 0;
     pollingRef.current = setInterval(async () => {
-      const res = await fetch(`http://localhost:4000/api/logs/${id}`);
+      const res = await fetch(API_ENDPOINTS.LOGS(id));
       const data = await res.json();
       if (data.ok) {
         if (data.logs.length > lastLogCountRef.current) {

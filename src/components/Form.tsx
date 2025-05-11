@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import ImageFileInput from './ui/ImageFileInput';
+import { API_ENDPOINTS } from '../config/api';
 
 interface FormData {
   projectName: string;
@@ -39,7 +40,7 @@ export default function Form({ onLog, formData, setFormData }: FormProps) {
     if (formData.iconNotification) formDataToSend.append('iconNotification', formData.iconNotification);
     if (formData.iconSplash) formDataToSend.append('iconSplash', formData.iconSplash);
     try {
-      const res = await fetch('http://localhost:4000/api/generate-app', {
+      const res = await fetch(API_ENDPOINTS.GENERATE_APP, {
         method: 'POST',
         body: formDataToSend,
       });

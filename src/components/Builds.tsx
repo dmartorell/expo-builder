@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BuildsIcon } from './ui/BuildsIcon';
 import { Loader2 } from 'lucide-react';
+import { FolderIcon } from './ui/FolderIcon';
+import { API_ENDPOINTS } from '../config/api';
 
 interface Build {
   name: string;
@@ -14,7 +16,7 @@ export default function Builds() {
   useEffect(() => {
     const fetchBuilds = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/builds');
+        const response = await fetch(API_ENDPOINTS.BUILDS);
         if (!response.ok) throw new Error('Error al obtener builds');
         const data = await response.json();
         setBuilds(data.builds);
@@ -30,7 +32,7 @@ export default function Builds() {
 
   const handleDownload = async (filename: string) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/download/${filename}`);
+      const response = await fetch(API_ENDPOINTS.DOWNLOAD(filename));
       if (!response.ok) throw new Error('Error al descargar el archivo');
       
       // Crear un blob del archivo
@@ -53,7 +55,7 @@ export default function Builds() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 h-[120px]">
+    <div className="bg-white rounded-xl shadow p-6 h-[140px]">
       <div className="flex items-center gap-3 mb-4">
         <BuildsIcon />
         <h2 className="text-xl font-semibold text-gray-700">Builds</h2>
@@ -72,19 +74,7 @@ export default function Builds() {
                 onClick={() => handleDownload(build.filename)}
               >
                 <div className="flex items-center gap-2">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-gray-500"
-                  >
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                  </svg>
+                  <FolderIcon />
                   <span className="text-sm font-medium text-gray-700">{build.name}</span>
                 </div>
                 <span className="text-xs text-gray-500">.zip</span>

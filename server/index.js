@@ -21,52 +21,40 @@ const upload = multer({
   }
 });
 
+// Middleware
 app.use(cors());
+app.use(express.json());
 
-// Logs por proceso
+// Almacenamiento de logs por proceso
 const processLogs = {};
-
-// Función para añadir logs a un proceso
-const addLog = (id, message) => {
-  if (!processLogs[id]) {
-    processLogs[id] = { logs: [], done: false };
-  }
-  processLogs[id].logs.push(message);
-};
-
-// Guardar la función original de console.log
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
 
-// Función para interceptar los logs de la consola
-const interceptConsoleLogs = (id) => {
-  try {
+// Función para interceptar logs
+function interceptConsoleLogs(id) {
     console.log = (...args) => {
-      const message = args.join(' ');
-      originalConsoleLog(message);
-      addLog(id, message);
+    const message = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    processLogs[id].logs.push(message);
+    originalConsoleLog.apply(console, args);
     };
-
     console.error = (...args) => {
-      const message = args.join(' ');
-      originalConsoleError(message);
-      addLog(id, message);
-    };
-  } catch (error) {
-    originalConsoleError('Error intercepting console logs:', error);
-  }
-};
+    const message = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    processLogs[id].logs.push('❌ ' + message);
+    originalConsoleError.apply(console, args);
+  };
+}
 
-// Función para restaurar los logs originales
-const restoreConsoleLogs = () => {
-  try {
+// Función para restaurar logs
+function restoreConsoleLogs() {
     console.log = originalConsoleLog;
     console.error = originalConsoleError;
-  } catch (error) {
-    originalConsoleError('Error restoring console logs:', error);
   }
-};
 
+// Endpoints
 app.post('/api/generate-app', upload.fields([
   { name: 'iconIos', maxCount: 1 },
   { name: 'iconAndroid', maxCount: 1 },
@@ -176,12 +164,9 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Error handler general
-app.use((err, req, res, next) => {
-  originalConsoleError('Unhandled error:', err);
-  res.status(500).json({ ok: false, error: 'Internal server error' });
-});
-
+// Iniciar el servidor
 app.listen(port, () => {
-  originalConsoleLog(`Backend listening on http://localhost:${port}`);
+  console.log(`Servidor corriendo en http://localhost:${port}`);
+}).on('error', (err) => {
+  console.error('Error al iniciar el servidor:', err);
 }); 
