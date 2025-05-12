@@ -142,18 +142,12 @@ app.get('/api/builds', (req, res) => {
 app.get('/api/download/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(__dirname, 'builds', filename);
-  
-  // Verificar que el archivo existe
+
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'Archivo no encontrado' });
   }
 
-  // Enviar el archivo
-  res.download(filePath, filename, (err) => {
-    if (err) {
-      res.status(500).json({ error: 'Error al descargar el archivo' });
-    }
-  });
+  res.download(filePath, filename);
 });
 
 // Manejo de errores de multer
