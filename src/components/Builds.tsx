@@ -32,23 +32,8 @@ export default function Builds() {
 
   const handleDownload = async (filename: string) => {
     try {
-      const response = await fetch(API_ENDPOINTS.DOWNLOAD(filename));
-      if (!response.ok) throw new Error('Error al descargar el archivo');
-      
-      // Crear un blob del archivo
-      const blob = await response.blob();
-      
-      // Crear un enlace temporal y hacer clic en él
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Limpiar
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Abrir la URL en una nueva pestaña
+      window.open(API_ENDPOINTS.DOWNLOAD(filename), '_blank');
     } catch (error) {
       console.error('Error al descargar:', error);
     }

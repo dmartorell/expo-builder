@@ -5,4 +5,5 @@ export const API_ENDPOINTS = {
   LOGS: (id: string) => `${API_BASE_URL}/api/logs/${id}`,
   BUILDS: `${API_BASE_URL}/api/builds`,
   DOWNLOAD: (filename: string) => `${API_BASE_URL}/api/download/${filename}`,
+  SYSTEM_VERSIONS: `${API_BASE_URL}/api/system-versions`,
 } as const; 

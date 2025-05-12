@@ -5,6 +5,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { generateApp } = require('./generator/generateApp');
 const fs = require('fs');
+const { execSync } = require('child_process');
 
 const app = express();
 const port = 4000;
@@ -53,6 +54,15 @@ function restoreConsoleLogs() {
     console.log = originalConsoleLog;
     console.error = originalConsoleError;
   }
+
+// Función para obtener versión de manera segura
+function getVersion(command) {
+  try {
+    return execSync(command).toString().trim();
+  } catch (error) {
+    return 'No instalado';
+  }
+}
 
 // Endpoints
 app.post('/api/generate-app', upload.fields([
@@ -148,6 +158,21 @@ app.get('/api/download/:filename', (req, res) => {
   }
 
   res.download(filePath, filename);
+});
+
+// Endpoint para obtener versiones del sistema
+app.get('/api/system-versions', (req, res) => {
+  try {
+    const versions = {
+      node: getVersion('node -v'),
+      yarn: getVersion('yarn -v'),
+      ruby: getVersion('ruby -v').split(' ')[1], // Tomamos solo la versión numérica
+      cocoapods: getVersion('pod --version')
+    };
+    res.json(versions);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener versiones del sistema' });
+  }
 });
 
 // Manejo de errores de multer

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import TerminalLogs from './TerminalLogs';
 import TerminalHeader from './TerminalHeader';
+import { API_ENDPOINTS } from '../config/api';
 
 interface TerminalLogsProps {
   logs: string[];
@@ -27,6 +28,7 @@ interface TerminalProps {
 
 export default function Terminal({ logs, setLogs }: TerminalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const versionsLoadedRef = useRef(false);
 
   // Efecto para auto-scroll
   useEffect(() => {
@@ -96,9 +98,44 @@ export default function Terminal({ logs, setLogs }: TerminalProps) {
     return result;
   }, [logs]);
 
+  useEffect(() => {
+    if (versionsLoadedRef.current) return;
+
+    const fetchSystemVersions = async () => {
+      try {
+        const response = await fetch(API_ENDPOINTS.SYSTEM_VERSIONS);
+        const versions = await response.json();
+        setLogs(prevLogs => {
+          // Solo añadir las versiones si no están ya en los logs
+          if (!prevLogs.some(log => log.includes('Versiones instaladas'))) {
+            return [
+              'Versiones instaladas:',
+              `Node: ${versions.node}`,
+              `Yarn: ${versions.yarn}`,
+              `Ruby: ${versions.ruby}`,
+              `CocoaPods: ${versions.cocoapods}`,
+              ' ',
+              ...prevLogs.map(log => log.startsWith('Versiones instaladas:') ? `text-white ${log}` : log)
+            ];
+          }
+          return prevLogs;
+        });
+        versionsLoadedRef.current = true;
+      } catch (error) {
+        console.error('Error al obtener versiones:', error);
+      }
+    };
+
+    fetchSystemVersions();
+  }, [setLogs]);
+
+  const handleClear = () => {
+    setLogs([]);
+  };
+
   return (
     <>
-      <TerminalHeader onClear={() => setLogs([])} hasLogs={logs.length > 0} />
+      <TerminalHeader onClear={handleClear} hasLogs={logs.length > 0} />
       <div className="flex-1 min-h-0 overflow-y-auto">
         <TerminalLogs logs={logs} />
       </div>

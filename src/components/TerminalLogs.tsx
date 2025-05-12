@@ -135,6 +135,13 @@ export default function TerminalLogs({ logs }: TerminalLogsProps) {
               return <div key={i}>{step.message.replace('✔', '').trim()}</div>;
             }
             // Log normal
+            if (step.message.startsWith('Versiones instaladas:') || 
+                step.message.includes('Node:') || 
+                step.message.includes('Yarn:') || 
+                step.message.includes('Ruby:') || 
+                step.message.includes('CocoaPods:')) {
+              return <div key={i} className="text-white">{step.message}</div>;
+            }
             return <div key={i}>{step.message}</div>;
           })
         )}
