@@ -36,6 +36,11 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
     const parsedAppName = appName.toLowerCase().replace(/\s/g, '-');
     const projectPath = `generated/${parsedAppName}`;
 
+    // Verificar si el directorio ya existe
+    if (fs.existsSync(projectPath)) {
+      throw new Error(`El directorio '${projectPath}' ya existe. Por favor, elige otro nombre para tu aplicación o elimina el directorio existente.`);
+    }
+
     await executeCommand(
       `yarn create expo-app ${projectPath} --template expo-template-blank-typescript`,
       `Generando proyecto Expo ${parsedAppName}...`,
@@ -80,54 +85,54 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
     );
     await addAndCommitChanges(projectPath);
 
-    // Eliminar node_modules
-    console.log('Eliminando node_modules...');
-    const nodeModulesPath = path.join(projectPath, 'node_modules');
-    if (fs.existsSync(nodeModulesPath)) {
-      fs.rmSync(nodeModulesPath, { recursive: true, force: true });
-      console.log('node_modules eliminado correctamente');
-    }
+    // // Eliminar node_modules
+    // console.log('Eliminando node_modules...');
+    // const nodeModulesPath = path.join(projectPath, 'node_modules');
+    // if (fs.existsSync(nodeModulesPath)) {
+    //   fs.rmSync(nodeModulesPath, { recursive: true, force: true });
+    //   console.log('node_modules eliminado correctamente');
+    // }
 
-    // Crear carpeta builds si no existe
-    const buildsDir = path.join(__dirname, '..', 'builds');
-    if (!fs.existsSync(buildsDir)) {
-      fs.mkdirSync(buildsDir, { recursive: true });
-      console.log('Carpeta builds creada');
-    }
+    // // Crear carpeta builds si no existe
+    // const buildsDir = path.join(__dirname, '..', 'builds');
+    // if (!fs.existsSync(buildsDir)) {
+    //   fs.mkdirSync(buildsDir, { recursive: true });
+    //   console.log('Carpeta builds creada');
+    // }
 
-    // Crear archivo ZIP
-    console.log('Creando archivo ZIP...');
-    const zipPath = path.join(buildsDir, `${parsedAppName}.zip`);
-    const output = fs.createWriteStream(zipPath);
-    const archive = archiver('zip', {
-      zlib: { level: 9 } // Máxima compresión
-    });
+    // // Crear archivo ZIP
+    // console.log('Creando archivo ZIP...');
+    // const zipPath = path.join(buildsDir, `${parsedAppName}.zip`);
+    // const output = fs.createWriteStream(zipPath);
+    // const archive = archiver('zip', {
+    //   zlib: { level: 9 } // Máxima compresión
+    // });
 
-    return new Promise((resolve, reject) => {
-      output.on('close', () => {
-        console.log(`Archivo ZIP creado: ${zipPath}`);
-        console.log(`Tamaño total: ${(archive.pointer() / 1024 / 1024).toFixed(2)} MB`);
-        resolve();
-      });
+    // return new Promise((resolve, reject) => {
+    //   output.on('close', () => {
+    //     console.log(`Archivo ZIP creado: ${zipPath}`);
+    //     console.log(`Tamaño total: ${(archive.pointer() / 1024 / 1024).toFixed(2)} MB`);
+    //     resolve();
+    //   });
 
-      archive.on('error', (err) => {
-        console.error('Error al crear el ZIP:', err);
-        reject(err);
-      });
+    //   archive.on('error', (err) => {
+    //     console.error('Error al crear el ZIP:', err);
+    //     reject(err);
+    //   });
 
-      archive.pipe(output);
-      archive.directory(projectPath, parsedAppName);
-      archive.finalize();
-    }).then(() => {
-      // Limpia la carpeta uploads
-      cleanUploadsFolder();
-      console.log('Proceso finalizado.');
-    }).catch((error) => {
-      console.error('Error en la generación:', error);
-      throw error;
-    });
+    //   archive.pipe(output);
+    //   archive.directory(projectPath, parsedAppName);
+    //   archive.finalize();
+    // }).then(() => {
+    //   // Limpia la carpeta uploads
+    //   cleanUploadsFolder();
+    //   console.log('Proceso finalizado.');
+    // }).catch((error) => {
+    //   console.error('Error en la generación:', error);
+    //   throw error;
+    // });
   } catch (error) {
-    console.error('❌ Error en la generación: ' + error.message);
+    // Solo lanzamos el error sin imprimir, ya que será manejado en generateApp
     throw error;
   }
 }

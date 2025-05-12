@@ -25,6 +25,29 @@ export default function Form({ onLog, formData, setFormData }: FormProps) {
   const iconAndroidRef = useRef<HTMLInputElement>(null);
   const iconNotificationRef = useRef<HTMLInputElement>(null);
   const iconSplashRef = useRef<HTMLInputElement>(null);
+  const currentProcessId = useRef<string | null>(null);
+
+  // Función para verificar el estado del proceso
+  const checkProcessStatus = async (processId: string) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.LOGS(processId));
+      const data = await response.json();
+      
+      if (data.done) {
+        // Verificar si el proceso terminó con éxito (no hay errores en los logs)
+        const completedSuccessfully = data.logs.some((log: string) => log.includes('Proceso finalizado.'));
+        if (completedSuccessfully) {
+          window.dispatchEvent(new Event('app-created'));
+        }
+        return;
+      }
+      
+      // Si el proceso no ha terminado, seguir verificando
+      setTimeout(() => checkProcessStatus(processId), 3000);
+    } catch (error) {
+      console.error('Error checking process status:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +69,10 @@ export default function Form({ onLog, formData, setFormData }: FormProps) {
       });
       const data = await res.json();
       if (data.ok && data.id) {
+        currentProcessId.current = data.id;
         onLog?.('Proceso iniciado. Mostrando logs...', data.id);
+        // Iniciar la verificación del estado del proceso
+        checkProcessStatus(data.id);
       } else {
         onLog?.('❌ ' + (data.error || 'Error desconocido.'));
       }
@@ -135,7 +161,7 @@ export default function Form({ onLog, formData, setFormData }: FormProps) {
         />
         <p className="text-xs text-gray-400 mt-1">PNG 96x96</p>
       </div>
-      <p className="text-xs text-gray-500 mt-2">Los iconos son opcionales. Si no se proporcionan, se utilizarán los iconos Alfred predeterminados.</p>
+      <p className="text-xs text-gray-500 mt-2">Los iconos son opcionales. Si no se proporcionan, se utilizarán los iconos predeterminados de Expo.</p>
     </form>
   );
 } 

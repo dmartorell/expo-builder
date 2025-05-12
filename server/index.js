@@ -99,7 +99,6 @@ app.post('/api/generate-app', upload.fields([
       })
       .catch((err) => {
         const errorMsg = typeof err === 'string' ? err : (err && err.message) ? err.message : JSON.stringify(err);
-        console.log('❌ Error en la generación: ' + errorMsg);
         processLogs[id].done = true;
         restoreConsoleLogs();
       });
@@ -128,16 +127,9 @@ app.get('/api/logs/:id', (req, res) => {
   }
 });
 
-// Endpoint para obtener la lista de builds
+// Endpoint para obtener la lista de Builds
 app.get('/api/builds', (req, res) => {
   const buildsDir = path.join(__dirname, 'builds');
-  
-  // Verificar si existe el directorio
-  if (!fs.existsSync(buildsDir)) {
-    return res.json({ builds: [] });
-  }
-
-  // Obtener lista de archivos ZIP
   const files = fs.readdirSync(buildsDir)
     .filter(file => file.endsWith('.zip'))
     .map(file => ({
@@ -146,6 +138,29 @@ app.get('/api/builds', (req, res) => {
     }));
 
   res.json({ builds: files });
+});
+
+// Endpoint para obtener la lista de generated apps
+app.get('/api/generated-apps', (req, res) => {
+  const generatedDir = path.join(__dirname, 'generated');
+  
+  // Verificar si existe el directorio
+  if (!fs.existsSync(generatedDir)) {
+    return res.json({ generatedApps: [] });
+  }
+
+  // Obtener lista de directorios
+  const dirs = fs.readdirSync(generatedDir)
+    .filter(file => {
+      const fullPath = path.join(generatedDir, file);
+      return fs.statSync(fullPath).isDirectory();
+    })
+    .map(dir => ({
+      name: dir,
+      filename: dir
+    }));
+
+  res.json({ generatedApps: dirs });
 });
 
 // Endpoint para servir archivos ZIP

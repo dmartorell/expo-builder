@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { FolderIcon } from './ui/FolderIcon';
 import { API_ENDPOINTS } from '../config/api';
 
-interface Build {
+export interface Build {
   name: string;
   filename: string;
 }
@@ -40,7 +40,7 @@ export default function Builds() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 h-[140px]">
+    <div className="bg-white rounded-xl shadow p-6 min-h-[140px]">
       <div className="flex items-center gap-3 mb-4">
         <BuildsIcon />
         <h2 className="text-xl font-semibold text-gray-700">Builds</h2>
@@ -72,6 +72,6 @@ export default function Builds() {
           </div>
         )}
       </div>
-    </div>
+    </ div>
   );
 } 

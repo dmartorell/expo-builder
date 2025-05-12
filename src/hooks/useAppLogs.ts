@@ -23,7 +23,7 @@ export const useAppLogs = () => {
           pollingRef.current = null;
         }
       }
-    }, 1000);
+    }, 2000);
   }, []);
 
   const handleLog = useCallback((log: string, processIdFromForm?: string) => {
