@@ -85,21 +85,25 @@ io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
   
   // Crear un proceso pty para cada cliente usando zsh
-  const term = pty.spawn('zsh', [], {
+  const term = pty.spawn('zsh', ['-f'], {
     name: 'xterm-color',
-    cwd: path.join(__dirname, 'generated'),
+    cwd: path.join(__dirname, 'generated', socket.handshake.query.appName || ''),
     env: {
       ...process.env,
       TERM: 'xterm-256color',
       ZSH: '/bin/zsh',
       SHELL: '/bin/zsh',
-      // Evitar cargar configuraciones adicionales
       ZDOTDIR: '/tmp',
       ZSH_DISABLE_COMPFIX: 'true'
     }
   });
   
   terminals[socket.id] = term;
+
+  // Configurar el prompt después de iniciar la terminal
+  term.write('autoload -Uz colors && colors\r');
+  term.write('PROMPT="%F{82}%~%f %F{white}❯%f "\r');
+  term.write('clear\r');
   
   // Manejar datos del terminal
   term.onData((data) => {

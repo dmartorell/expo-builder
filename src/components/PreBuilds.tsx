@@ -131,7 +131,7 @@ export default function PreBuilds() {
             onCommand={handleTerminalCommand}
             initialCommand="npm list -g eas-cli || npm install --global eas-cli; npx eas-cli build:configure"
             initialOutput={`Configurando EAS para ${currentApp}...\n`}
-            initialDir={`server/generated/${currentApp}`}
+            initialDir={`/Users/danielmartorell/Desktop/ALFRED/app-generator/server/generated/${currentApp}`}
           />
         </div>
       )}

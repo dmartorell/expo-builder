@@ -61,7 +61,10 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
     // Conectar con el backend via Socket.IO
     socketRef.current = io('http://localhost:4000', {
       path: '/socket.io/',
-      withCredentials: true
+      withCredentials: true,
+      query: {
+        appName: initialDir.split('/').pop()
+      }
     });
 
     // Escuchar datos de salida del servidor
@@ -80,9 +83,46 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
       terminalInstance.current.write(initialOutput);
     }
 
+    // Mostrar el path actual
+    const currentPath = initialDir || '~';
+    terminalInstance.current.write(`\r\n\x1b[32m${currentPath}\x1b[0m \x1b[34m❯\x1b[0m `);
+
     // Ejecutar comando inicial si existe
     if (initialCommand) {
-      socketRef.current?.emit('command', initialCommand);
+      // Mostrar mensajes amigables en lugar del comando
+      terminalInstance.current.write('\r\nComprobando versión de eas-cli...\r\n');
+      
+      // Primero verificamos si eas-cli está instalado
+      socketRef.current?.emit('command', 'npm list -g eas-cli');
+      
+      // Esperamos la respuesta del comando anterior
+      let easCliInstalled = false;
+      socketRef.current?.on('output', (data: string) => {
+        if (data.includes('eas-cli@')) {
+          easCliInstalled = true;
+          terminalInstance.current?.write('\r\nEas-cli ya está instalado. Procediendo con la configuración...\r\n');
+          // Primero nos movemos al directorio del proyecto
+          socketRef.current?.emit('command', `cd ${initialDir}`);
+          // Luego ejecutamos la configuración
+          setTimeout(() => {
+            socketRef.current?.emit('command', 'npx eas-cli build:configure');
+          }, 1000);
+        } else if (data.includes('empty') && !easCliInstalled) {
+          terminalInstance.current?.write('\r\nInstalando eas-cli globalmente...\r\n');
+          socketRef.current?.emit('command', 'npm install --global eas-cli');
+          
+          // Esperar a que se instale antes de configurar
+          setTimeout(() => {
+            terminalInstance.current?.write('\r\nConfigurando Eas Project...\r\n');
+            // Primero nos movemos al directorio del proyecto
+            socketRef.current?.emit('command', `cd ${initialDir}`);
+            // Luego ejecutamos la configuración
+            setTimeout(() => {
+              socketRef.current?.emit('command', 'npx eas-cli build:configure');
+            }, 1000);
+          }, 2000);
+        }
+      });
     }
 
     // Limpiar al desmontar

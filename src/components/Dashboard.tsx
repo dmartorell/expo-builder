@@ -27,9 +27,9 @@ export default function Dashboard({ onLog, logs, setLogs, formData, setFormData 
       <div className="flex flex-col md:flex-row gap-6">
         {/* Columna izquierda: Formulario */}
         <div className="flex-1">
-          <section className="bg-white rounded-xl shadow p-6 flex flex-col h-[820px] overflow-y-auto">
-            <Form onLog={onLog} formData={formData} setFormData={setFormData} />
-          </section>
+        <section className="bg-white rounded-xl shadow p-6 flex flex-col h-[820px] overflow-y-auto">
+          <Form onLog={onLog} formData={formData} setFormData={setFormData} />
+        </section>
         </div>
         {/* Terminal */}
         <section className="md:w-1/2 bg-black rounded-xl shadow p-6 text-green-400 font-mono text-sm font-normal flex flex-col h-[820px] min-h-0">
