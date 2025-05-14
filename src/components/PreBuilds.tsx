@@ -40,7 +40,7 @@ export default function PreBuilds() {
         },
         body: JSON.stringify({
           command,
-          cwd: `generated/${currentApp}`
+          cwd: `server/generated/${currentApp}`
         }),
       });
 
@@ -129,9 +129,9 @@ export default function PreBuilds() {
         <div className="mt-4 w-full">
           <Terminal2 
             onCommand={handleTerminalCommand}
-            initialCommand="npx eas-cli build:configure"
+            initialCommand="npm list -g eas-cli || npm install --global eas-cli; npx eas-cli build:configure"
             initialOutput={`Configurando EAS para ${currentApp}...\n`}
-            initialDir={`generated/${currentApp}`}
+            initialDir={`server/generated/${currentApp}`}
           />
         </div>
       )}

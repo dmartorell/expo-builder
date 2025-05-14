@@ -9,14 +9,18 @@ interface Terminal2Props {
   onCommand?: (command: string) => Promise<string>;
   initialOutput?: string;
   initialDir?: string;
+  initialCommand?: string;
 }
 
-const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initialDir = '' }) => {
+const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initialDir = '', initialCommand }) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminalInstance = useRef<Terminal | null>(null);
   const socketRef = useRef<any>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
 
   useEffect(() => {
+    if (!terminalRef.current) return;
+
     // Inicializar la terminal
     terminalInstance.current = new Terminal({
       cursorBlink: true,
@@ -32,15 +36,27 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
     });
 
     // Añadir addons
-    const fitAddon = new FitAddon();
-    terminalInstance.current.loadAddon(fitAddon);
+    fitAddonRef.current = new FitAddon();
+    terminalInstance.current.loadAddon(fitAddonRef.current);
     terminalInstance.current.loadAddon(new WebLinksAddon());
 
     // Abrir la terminal en el div de referencia
-    if (terminalRef.current) {
-      terminalInstance.current.open(terminalRef.current);
-      fitAddon.fit();
-    }
+    terminalInstance.current.open(terminalRef.current);
+
+    // Configurar ResizeObserver para manejar cambios de tamaño
+    const resizeObserver = new ResizeObserver(() => {
+      if (fitAddonRef.current) {
+        fitAddonRef.current.fit();
+        if (socketRef.current) {
+          socketRef.current.emit('resize', {
+            cols: terminalInstance.current?.cols,
+            rows: terminalInstance.current?.rows
+          });
+        }
+      }
+    });
+
+    resizeObserver.observe(terminalRef.current);
 
     // Conectar con el backend via Socket.IO
     socketRef.current = io('http://localhost:4000', {
@@ -59,50 +75,40 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
       socketRef.current?.emit('input', data);
     });
 
-    // Función para manejar el redimensionamiento
-    const handleResize = () => {
-      fitAddon.fit();
-      if (socketRef.current) {
-        socketRef.current.emit('resize', {
-          cols: terminalInstance.current?.cols,
-          rows: terminalInstance.current?.rows
-        });
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-
     // Mostrar output inicial si existe
     if (initialOutput) {
       terminalInstance.current.write(initialOutput);
     }
 
-    // Mostrar prompt inicial
-    const dir = initialDir || '~';
-    terminalInstance.current.write(`\r\n\x1b[32m${dir}\x1b[0m $ `);
+    // Ejecutar comando inicial si existe
+    if (initialCommand) {
+      socketRef.current?.emit('command', initialCommand);
+    }
 
     // Limpiar al desmontar
     return () => {
+      resizeObserver.disconnect();
       if (terminalInstance.current) {
         terminalInstance.current.dispose();
       }
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-      window.removeEventListener('resize', handleResize);
     };
-  }, [initialOutput, initialDir]);
+  }, [initialOutput, initialDir, initialCommand]);
 
   return (
-    <div className="terminal-container bg-[#1a1a1a] rounded-lg p-4 h-[400px] w-full overflow-hidden">
+    <div className="terminal-container bg-[#1a1a1a] rounded-lg p-4 h-[400px] w-full">
       <div 
         ref={terminalRef} 
         className="h-full w-full"
         style={{ 
-          minHeight: '300px',
-          minWidth: '100%',
-          maxWidth: '100%',
-          overflow: 'hidden'
+          height: '100%',
+          width: '100%',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '8px'
         }}
       />
     </div>

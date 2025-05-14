@@ -8,7 +8,7 @@ const fs = require('fs');
 const { execSync, spawn } = require('child_process');
 const http = require('http');
 const { Server } = require('socket.io');
-const pty = require('node-pty');
+const pty = require('node-pty-prebuilt-multiarch');
 const os = require('os');
 
 const app = express();
@@ -84,12 +84,19 @@ const terminals = {};
 io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
   
-  // Crear un proceso pty para cada cliente
-  const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
-  const term = pty.spawn(shell, [], {
+  // Crear un proceso pty para cada cliente usando zsh
+  const term = pty.spawn('zsh', [], {
     name: 'xterm-color',
-    cwd: process.env.HOME || process.env.USERPROFILE,
-    env: process.env
+    cwd: path.join(__dirname, 'generated'),
+    env: {
+      ...process.env,
+      TERM: 'xterm-256color',
+      ZSH: '/bin/zsh',
+      SHELL: '/bin/zsh',
+      // Evitar cargar configuraciones adicionales
+      ZDOTDIR: '/tmp',
+      ZSH_DISABLE_COMPFIX: 'true'
+    }
   });
   
   terminals[socket.id] = term;
