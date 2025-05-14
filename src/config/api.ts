@@ -7,4 +7,5 @@ export const API_ENDPOINTS = {
   GENERATED_APPS: `${API_BASE_URL}/api/generated-apps`,
   DOWNLOAD: (filename: string) => `${API_BASE_URL}/api/download/${filename}`,
   SYSTEM_VERSIONS: `${API_BASE_URL}/api/system-versions`,
+  TERMINAL_EXECUTE: `${API_BASE_URL}/api/terminal/execute`,
 } as const; 

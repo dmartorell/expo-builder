@@ -23,23 +23,24 @@ interface DashboardProps {
 
 export default function Dashboard({ onLog, logs, setLogs, formData, setFormData }: DashboardProps) {
   return (
-    <main className="grid md:grid-cols-2 gap-6 py-8 max-w-7xl mx-auto items-stretch">
-      {/* Columna izquierda: Formulario y Builds */}
-      <div className="space-y-6">
-        <section className="bg-white rounded-xl shadow p-6 flex flex-col h-[820px] overflow-y-auto">
-          <Form onLog={onLog} formData={formData} setFormData={setFormData} />
-        </section>
-        <section>
-          <PreBuilds />
-        </section>
-        <section>
-          <Builds />
+    <div className="flex flex-col gap-6 py-8 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Columna izquierda: Formulario */}
+        <div className="flex-1">
+          <section className="bg-white rounded-xl shadow p-6 flex flex-col h-[820px] overflow-y-auto">
+            <Form onLog={onLog} formData={formData} setFormData={setFormData} />
+          </section>
+        </div>
+        {/* Terminal */}
+        <section className="md:w-1/2 bg-black rounded-xl shadow p-6 text-green-400 font-mono text-sm font-normal flex flex-col h-[820px] min-h-0">
+          <Terminal logs={logs} setLogs={setLogs} />
         </section>
       </div>
-      {/* Terminal */}
-      <section className="bg-black rounded-xl shadow p-6 text-green-400 font-mono text-sm font-normal flex flex-col h-[820px] min-h-0">
-        <Terminal logs={logs} setLogs={setLogs} />
-      </section>
-    </main>
+      {/* PreBuilds y Builds */}
+      <div className="space-y-6">
+        <PreBuilds />
+        <Builds />
+      </div>
+    </div>
   );
 } 
