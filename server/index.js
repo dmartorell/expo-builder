@@ -11,6 +11,7 @@ const { Server } = require('socket.io');
 const pty = require('node-pty-prebuilt-multiarch');
 const os = require('os');
 const { updateAppConfig } = require('./generator/updateAppConfig');
+const { cleanAndZip } = require('./generator/cleanAndZip');
 
 const app = express();
 const server = http.createServer(app);
@@ -446,6 +447,27 @@ app.post('/api/update-app-config', async (req, res) => {
       success: false,
       error: error.message || 'Error interno del servidor'
     });
+  }
+});
+
+// Endpoint para limpiar y comprimir el proyecto
+app.post('/api/clean-and-zip', async (req, res) => {
+  try {
+    const { appName } = req.body;
+    if (!appName) {
+      return res.status(400).json({ success: false, error: 'Nombre de la app no proporcionado' });
+    }
+
+    const projectPath = path.join(__dirname, 'generated', appName);
+    if (!fs.existsSync(projectPath)) {
+      return res.status(404).json({ success: false, error: 'Proyecto no encontrado' });
+    }
+
+    const result = await cleanAndZip(projectPath);
+    res.json(result);
+  } catch (error) {
+    console.error('Error en clean-and-zip:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

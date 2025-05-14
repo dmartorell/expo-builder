@@ -74,7 +74,6 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
 
     // Manejar la entrada del usuario
     terminalInstance.current.onData((data) => {
-      // Enviar lo que escribe el usuario al servidor
       socketRef.current?.emit('input', data);
     });
 
@@ -89,13 +88,10 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
 
     // Ejecutar comando inicial si existe
     if (initialCommand) {
-      // Mostrar mensajes amigables en lugar del comando
       terminalInstance.current.write('\r\nComprobando versión de eas-cli...\r\n');
       
-      // Primero verificamos si eas-cli está instalado
       socketRef.current?.emit('command', 'npm list -g eas-cli');
       
-      // Esperamos la respuesta del comando anterior
       let easCliInstalled = false;
       let easConfigCompleted = false;
       let configOutput = '';
@@ -111,29 +107,24 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
           terminalInstance.current?.write('\r\nInstalando eas-cli globalmente...\r\n');
           socketRef.current?.emit('command', 'npm install --global eas-cli');
           
-          // Esperar a que se instale antes de configurar
           setTimeout(() => {
             terminalInstance.current?.write('\r\nConfigurando Eas Project...\r\n');
             socketRef.current?.emit('command', 'npx eas-cli build:configure');
           }, 2000);
         }
 
-        // Verificar si la configuración de EAS ha terminado
         if (configOutput.includes('Your project is ready to build')) {
           if (!easConfigCompleted) {
             easConfigCompleted = true;
-            // Esperar 1 segundo antes de preguntar
             setTimeout(() => {
-              terminalInstance.current?.write('\r\n¿Deseas actualizar la configuración del proyecto? (Y/n): ');
+              terminalInstance.current?.write('\r\n¿Deseas actualizar la configuración del proyecto? (S/n): ');
               
-              // Escuchar la respuesta del usuario
               const handleUserInput = (input: string) => {
-                // Limpiar el input de caracteres especiales y espacios
                 const cleanInput = input.trim().toLowerCase();
                 
                 if (cleanInput === '' || cleanInput === 's' || cleanInput === 'y' || cleanInput === 'si' || cleanInput === 'yes') {
                   terminalInstance.current?.write('\r\nActualizando configuración...\r\n');
-                  // Llamar al endpoint para actualizar la configuración
+                  
                   fetch('http://localhost:4000/api/update-app-config', {
                     method: 'POST',
                     headers: {
@@ -160,58 +151,56 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
                       terminalInstance.current?.write(`- app.json eliminado\r\n`);
                       terminalInstance.current?.write(`- app.config.ts eliminado de la carpeta config\r\n`);
                       
-                      // Cerrar socket y bloquear terminal
-                      if (socketRef.current) {
-                        socketRef.current.disconnect();
-                      }
-                      // Deshabilitar la entrada del usuario y ocultar el cursor
-                      if (terminalInstance.current) {
-                        terminalInstance.current.options.disableStdin = true;
-                        terminalInstance.current.options.cursorBlink = false;
-                        terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
-                      }
+                      // Eliminar node_modules y crear ZIP
+                      return fetch('http://localhost:4000/api/clean-and-zip', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          appName: initialDir.split('/').pop()
+                        }),
+                      });
                     } else {
-                      terminalInstance.current?.write(`\r\n❌ Error: ${data.error || 'Error desconocido'}\r\n`);
-                      
-                      // Cerrar socket y bloquear terminal en caso de error también
-                      if (socketRef.current) {
-                        socketRef.current.disconnect();
-                      }
-                      if (terminalInstance.current) {
-                        terminalInstance.current.options.disableStdin = true;
-                        terminalInstance.current.options.cursorBlink = false;
-                        terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
-                      }
+                      throw new Error(data.error || 'Error desconocido');
+                    }
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.success) {
+                      terminalInstance.current?.write(`\r\n✅ node_modules eliminado\r\n`);
+                      terminalInstance.current?.write(`✅ Proyecto guardado como ZIP en builds/${data.zipName}\r\n`);
+                      // Disparar evento de nuevo build
+                      window.dispatchEvent(new Event('new-build-created'));
                     }
                   })
                   .catch(error => {
-                    console.error('Error en la actualización:', error);
+                    console.error('Error:', error);
                     terminalInstance.current?.write(`\r\n❌ Error: ${error.message}\r\n`);
-                    
-                    // Cerrar socket y bloquear terminal en caso de error
+                  })
+                  .finally(() => {
                     if (socketRef.current) {
                       socketRef.current.disconnect();
                     }
                     if (terminalInstance.current) {
                       terminalInstance.current.options.disableStdin = true;
                       terminalInstance.current.options.cursorBlink = false;
-                      terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
+                      terminalInstance.current.write('\x1b[?25l');
                     }
                   });
                 } else {
                   terminalInstance.current?.write('\r\nOperación cancelada por el usuario\r\n');
                   
-                  // Cerrar socket y bloquear terminal si el usuario cancela
                   if (socketRef.current) {
                     socketRef.current.disconnect();
                   }
                   if (terminalInstance.current) {
                     terminalInstance.current.options.disableStdin = true;
                     terminalInstance.current.options.cursorBlink = false;
-                    terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
+                    terminalInstance.current.write('\x1b[?25l');
                   }
                 }
-                // Remover el listener específico de la respuesta
+                
                 const disposable = terminalInstance.current?.onData(handleUserInput);
                 disposable?.dispose();
               };
@@ -223,7 +212,6 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
       });
     }
 
-    // Limpiar al desmontar
     return () => {
       resizeObserver.disconnect();
       if (terminalInstance.current) {

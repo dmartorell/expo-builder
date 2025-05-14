@@ -13,21 +13,32 @@ export default function Builds() {
   const [builds, setBuilds] = useState<Build[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchBuilds = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(API_ENDPOINTS.BUILDS);
+      if (!response.ok) throw new Error('Error al obtener builds');
+      const data = await response.json();
+      setBuilds(data.builds);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchBuilds = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.BUILDS);
-        if (!response.ok) throw new Error('Error al obtener builds');
-        const data = await response.json();
-        setBuilds(data.builds);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
-      }
+    fetchBuilds();
+
+    // Escuchar el evento de nuevo build
+    const handleNewBuild = () => {
+      fetchBuilds();
     };
 
-    fetchBuilds();
+    window.addEventListener('new-build-created', handleNewBuild);
+    return () => {
+      window.removeEventListener('new-build-created', handleNewBuild);
+    };
   }, []);
 
   const handleDownload = async (filename: string) => {
@@ -72,6 +83,6 @@ export default function Builds() {
           </div>
         )}
       </div>
-    </ div>
+    </div>
   );
 } 
