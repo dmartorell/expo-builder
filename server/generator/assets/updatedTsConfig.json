@@ -13,6 +13,7 @@
     "**/*.ts",
     "**/*.tsx",
     "app.config.ts",
-    "eslint.config.mjs"
+    "eslint.config.mjs",
+    "package.json"
   ]
 }

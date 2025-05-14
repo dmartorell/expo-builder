@@ -1,6 +1,7 @@
 // @ts-ignore
 import { ConfigContext, ExpoConfig } from 'expo/config';
-import { version as projectVersion } from '../package.json';
+// @ts-ignore
+import { version as projectVersion } from './package.json';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

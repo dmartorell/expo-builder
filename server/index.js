@@ -10,6 +10,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const pty = require('node-pty-prebuilt-multiarch');
 const os = require('os');
+const { updateAppConfig } = require('./generator/updateAppConfig');
 
 const app = express();
 const server = http.createServer(app);
@@ -407,6 +408,44 @@ app.post('/api/terminal/execute', (req, res) => {
   } catch (error) {
     res.write(`Error: ${error.message}\n`);
     res.end();
+  }
+});
+
+// Endpoint para actualizar la configuración de la app
+app.post('/api/update-app-config', async (req, res) => {
+  try {
+    const { appName } = req.body;
+    if (!appName) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'El nombre de la app es requerido' 
+      });
+    }
+
+    const projectPath = path.join(__dirname, 'generated', appName);
+    const result = updateAppConfig(projectPath);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        details: {
+          projectId: result.details.projectId,
+          newAppConfigPath: result.details.newAppConfigPath,
+          deletedFiles: result.details.deletedFiles
+        }
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error || 'Error al actualizar la configuración'
+      });
+    }
+  } catch (error) {
+    console.error('Error en update-app-config:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Error interno del servidor'
+    });
   }
 });
 

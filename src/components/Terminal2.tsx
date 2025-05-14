@@ -97,7 +97,12 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
       
       // Esperamos la respuesta del comando anterior
       let easCliInstalled = false;
+      let easConfigCompleted = false;
+      let configOutput = '';
+
       socketRef.current?.on('output', (data: string) => {
+        configOutput += data;
+        
         if (data.includes('eas-cli@')) {
           easCliInstalled = true;
           terminalInstance.current?.write('\r\nEas-cli ya está instalado. Procediendo con la configuración...\r\n');
@@ -111,6 +116,109 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
             terminalInstance.current?.write('\r\nConfigurando Eas Project...\r\n');
             socketRef.current?.emit('command', 'npx eas-cli build:configure');
           }, 2000);
+        }
+
+        // Verificar si la configuración de EAS ha terminado
+        if (configOutput.includes('Your project is ready to build')) {
+          if (!easConfigCompleted) {
+            easConfigCompleted = true;
+            // Esperar 1 segundo antes de preguntar
+            setTimeout(() => {
+              terminalInstance.current?.write('\r\n¿Deseas actualizar la configuración del proyecto? (Y/n): ');
+              
+              // Escuchar la respuesta del usuario
+              const handleUserInput = (input: string) => {
+                // Limpiar el input de caracteres especiales y espacios
+                const cleanInput = input.trim().toLowerCase();
+                
+                if (cleanInput === '' || cleanInput === 's' || cleanInput === 'y' || cleanInput === 'si' || cleanInput === 'yes') {
+                  terminalInstance.current?.write('\r\nActualizando configuración...\r\n');
+                  // Llamar al endpoint para actualizar la configuración
+                  fetch('http://localhost:4000/api/update-app-config', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      appName: initialDir.split('/').pop()
+                    }),
+                  })
+                  .then(response => {
+                    if (!response.ok) {
+                      throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                  })
+                  .then(data => {
+                    if (data.success) {
+                      terminalInstance.current?.write('\r\n✅ Configuración actualizada correctamente\r\n');
+                      if (data.details?.projectId) {
+                        terminalInstance.current?.write(`\r\nProjectId: ${data.details.projectId}\r\n`);
+                      }
+                      terminalInstance.current?.write(`\r\nArchivos actualizados:\r\n`);
+                      terminalInstance.current?.write(`- app.config.ts movido a la raíz\r\n`);
+                      terminalInstance.current?.write(`- app.json eliminado\r\n`);
+                      terminalInstance.current?.write(`- app.config.ts eliminado de la carpeta config\r\n`);
+                      
+                      // Cerrar socket y bloquear terminal
+                      if (socketRef.current) {
+                        socketRef.current.disconnect();
+                      }
+                      // Deshabilitar la entrada del usuario y ocultar el cursor
+                      if (terminalInstance.current) {
+                        terminalInstance.current.options.disableStdin = true;
+                        terminalInstance.current.options.cursorBlink = false;
+                        terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
+                      }
+                    } else {
+                      terminalInstance.current?.write(`\r\n❌ Error: ${data.error || 'Error desconocido'}\r\n`);
+                      
+                      // Cerrar socket y bloquear terminal en caso de error también
+                      if (socketRef.current) {
+                        socketRef.current.disconnect();
+                      }
+                      if (terminalInstance.current) {
+                        terminalInstance.current.options.disableStdin = true;
+                        terminalInstance.current.options.cursorBlink = false;
+                        terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
+                      }
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error en la actualización:', error);
+                    terminalInstance.current?.write(`\r\n❌ Error: ${error.message}\r\n`);
+                    
+                    // Cerrar socket y bloquear terminal en caso de error
+                    if (socketRef.current) {
+                      socketRef.current.disconnect();
+                    }
+                    if (terminalInstance.current) {
+                      terminalInstance.current.options.disableStdin = true;
+                      terminalInstance.current.options.cursorBlink = false;
+                      terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
+                    }
+                  });
+                } else {
+                  terminalInstance.current?.write('\r\nOperación cancelada por el usuario\r\n');
+                  
+                  // Cerrar socket y bloquear terminal si el usuario cancela
+                  if (socketRef.current) {
+                    socketRef.current.disconnect();
+                  }
+                  if (terminalInstance.current) {
+                    terminalInstance.current.options.disableStdin = true;
+                    terminalInstance.current.options.cursorBlink = false;
+                    terminalInstance.current.write('\x1b[?25l'); // Ocultar cursor
+                  }
+                }
+                // Remover el listener específico de la respuesta
+                const disposable = terminalInstance.current?.onData(handleUserInput);
+                disposable?.dispose();
+              };
+              
+              terminalInstance.current?.onData(handleUserInput);
+            }, 1000);
+          }
         }
       });
     }

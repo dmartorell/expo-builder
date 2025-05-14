@@ -68,7 +68,7 @@ export default function Builds() {
           </div>
         ) : (
           <div className="text-sm text-gray-500 text-left">
-            Todavía no se ha generado una app.
+            Todavía no se ha generado un build completo.
           </div>
         )}
       </div>
