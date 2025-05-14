@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function Documentation() {
   return (
     <div className="p-8 max-w-3xl mx-auto text-gray-800">

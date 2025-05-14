@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BuildsIcon } from './ui/BuildsIcon';
+import { PrebuildsIcon } from './ui/PrebuildsIcon';
 import { Build } from './Builds';
 import { Loader2 } from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
@@ -27,11 +27,14 @@ export default function PreBuilds() {
   };
 
   const handleEasConfig = async (appName: string) => {
+    console.log('EAS Config clicked for:', appName);
     setCurrentApp(appName);
     setShowTerminal(true);
+    console.log('Terminal should be visible now');
   };
 
   const handleTerminalCommand = async (command: string) => {
+    console.log('Executing command:', command);
     try {
       const response = await fetch(API_ENDPOINTS.TERMINAL_EXECUTE, {
         method: 'POST',
@@ -90,7 +93,7 @@ export default function PreBuilds() {
   return (
     <div className="bg-white rounded-xl shadow p-6 min-h-[140px] w-full">
       <div className="flex items-center gap-3 mb-4">
-        <BuildsIcon />
+        <PrebuildsIcon />
         <h2 className="text-xl font-semibold text-gray-700">Pre Builds</h2>
       </div>
       <div className="min-h-[50px]">
@@ -105,16 +108,21 @@ export default function PreBuilds() {
                 key={build.filename}
                 className="flex items-center justify-between p-3 rounded-lg"
               >
-                <div className="flex items-center gap-2">
-                  <FolderIcon />
-                  <span className="text-sm font-medium text-gray-700">{build.name}</span>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <FolderIcon />
+                    <span className="text-sm font-medium text-gray-700">{build.name}</span>
+                  </div>
+                  <button 
+                    onClick={() => handleEasConfig(build.name)}
+                    className="px-4 py-2 bg-black font-semibold text-white text-xs rounded-md hover:bg-gray-800 transition flex items-center gap-2"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Start EAS Config
+                  </button>
                 </div>
-                <button 
-                  onClick={() => handleEasConfig(build.name)}
-                  className="px-4 py-2 bg-black font-semibold text-white text-xs rounded-md hover:bg-gray-800 transition"
-                >
-                  Eas Config
-                </button>
               </div>
             ))}
           </div>

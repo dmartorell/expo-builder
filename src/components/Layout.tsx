@@ -21,6 +21,7 @@ export default function Layout({
         </h1>
         <nav>{/* Aquí puedes añadir navegación si lo necesitas */}</nav>
       </header>
+
       {/* Tabs */}
       <Tabs defaultValue={defaultTab} className="px-8 pt-6">
         <div className="flex justify-end">
@@ -46,6 +47,15 @@ export default function Layout({
           {documentationContent}
         </TabsContent>
       </Tabs>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-100 mt-8">
+        <div className="container mx-auto px-4 py-4">
+          <p className="text-xs text-gray-500 text-center">
+            © {new Date().getFullYear()} Expo App Generator
+          </p>
+        </div>
+      </footer>
     </div>
   );
 } 
