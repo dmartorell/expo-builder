@@ -6,8 +6,31 @@ const { v4: uuidv4 } = require('uuid');
 const { generateApp } = require('./generator/generateApp');
 const fs = require('fs');
 const { execSync, spawn } = require('child_process');
+const http = require('http');
+const { Server } = require('socket.io');
+const pty = require('node-pty');
+const os = require('os');
 
 const app = express();
+const server = http.createServer(app);
+
+// Configurar CORS para Express
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
+// Configurar Socket.IO con CORS
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  path: '/socket.io/'
+});
+
 const port = 4000;
 
 // Configuración de multer para uploads, solo acepta PNG
@@ -23,7 +46,6 @@ const upload = multer({
 });
 
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 // Almacenamiento de logs por proceso
@@ -33,14 +55,14 @@ const originalConsoleError = console.error;
 
 // Función para interceptar logs
 function interceptConsoleLogs(id) {
-    console.log = (...args) => {
+  console.log = (...args) => {
     const message = args.map(arg => 
       typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
     ).join(' ');
     processLogs[id].logs.push(message);
     originalConsoleLog.apply(console, args);
-    };
-    console.error = (...args) => {
+  };
+  console.error = (...args) => {
     const message = args.map(arg => 
       typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
     ).join(' ');
@@ -51,9 +73,62 @@ function interceptConsoleLogs(id) {
 
 // Función para restaurar logs
 function restoreConsoleLogs() {
-    console.log = originalConsoleLog;
-    console.error = originalConsoleError;
-  }
+  console.log = originalConsoleLog;
+  console.error = originalConsoleError;
+}
+
+// Almacenamiento de terminales PTY
+const terminals = {};
+
+// Manejo de conexiones Socket.IO
+io.on('connection', (socket) => {
+  console.log('Cliente conectado:', socket.id);
+  
+  // Crear un proceso pty para cada cliente
+  const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
+  const term = pty.spawn(shell, [], {
+    name: 'xterm-color',
+    cwd: process.env.HOME || process.env.USERPROFILE,
+    env: process.env
+  });
+  
+  terminals[socket.id] = term;
+  
+  // Manejar datos del terminal
+  term.onData((data) => {
+    socket.emit('output', data);
+  });
+  
+  // Manejar entrada del usuario
+  socket.on('input', (data) => {
+    if (terminals[socket.id]) {
+      terminals[socket.id].write(data);
+    }
+  });
+  
+  // Manejar comandos específicos
+  socket.on('command', (command) => {
+    if (terminals[socket.id]) {
+      terminals[socket.id].write(`${command}\r`);
+    }
+  });
+  
+  // Manejar redimensionamiento
+  socket.on('resize', (size) => {
+    if (terminals[socket.id]) {
+      terminals[socket.id].resize(size.cols, size.rows);
+    }
+  });
+  
+  // Limpiar al desconectar
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado:', socket.id);
+    if (terminals[socket.id]) {
+      terminals[socket.id].kill();
+      delete terminals[socket.id];
+    }
+  });
+});
 
 // Función para obtener versión de manera segura
 function getVersion(command) {
@@ -243,37 +318,84 @@ app.post('/api/start-eas-config', async (req, res) => {
 });
 
 // Endpoint para ejecutar comandos en la terminal
-app.post('/api/terminal/execute', async (req, res) => {
+app.post('/api/terminal/execute', (req, res) => {
+  const { command, cwd } = req.body;
+
+  if (!command) {
+    return res.status(400).json({ error: 'No command provided' });
+  }
+
   try {
-    const { command, cwd } = req.body;
-    
-    if (!command) {
-      return res.status(400).json({ error: 'No se proporcionó ningún comando' });
+    // Asegurarnos de que estamos en un directorio válido
+    const baseDir = path.join(__dirname, 'generated');
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir, { recursive: true });
     }
 
     // Cambiar al directorio especificado si existe
-    let previousDir;
+    const originalCwd = process.cwd();
     if (cwd) {
-      previousDir = process.cwd();
-      process.chdir(cwd);
+      const targetDir = path.join(baseDir, path.basename(cwd));
+      if (fs.existsSync(targetDir)) {
+        process.chdir(targetDir);
+      } else {
+        return res.status(400).json({ error: `Directory ${targetDir} does not exist` });
+      }
+    } else {
+      process.chdir(baseDir);
     }
 
-    // Ejecutar el comando
-    const output = execSync(command, { encoding: 'utf8' });
+    // Configurar headers para streaming
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Transfer-Encoding', 'chunked');
 
-    // Restaurar el directorio anterior si cambiamos
-    if (previousDir) {
-      process.chdir(previousDir);
-    }
-
-    res.json({ output });
-  } catch (error) {
-    console.error('Error al ejecutar comando:', error);
-    res.status(500).json({ 
-      error: 'Error al ejecutar el comando',
-      details: error.message,
-      output: error.stdout || error.stderr
+    // Crear un proceso hijo usando spawn
+    const child = spawn(command, [], {
+      shell: true,
+      stdio: ['inherit', 'pipe', 'pipe'],
+      env: { 
+        ...process.env,
+        FORCE_COLOR: '1'
+      }
     });
+
+    let output = '';
+    let error = '';
+
+    // Manejar la salida estándar
+    child.stdout.on('data', (data) => {
+      const chunk = data.toString();
+      output += chunk;
+      res.write(chunk);
+    });
+
+    // Manejar la salida de error
+    child.stderr.on('data', (data) => {
+      const chunk = data.toString();
+      error += chunk;
+      res.write(chunk);
+    });
+
+    // Manejar el final del proceso
+    child.on('close', (code) => {
+      if (code !== 0) {
+        res.write(`\nProcess exited with code ${code}\n`);
+        if (error) {
+          res.write(`Error: ${error}\n`);
+        }
+      }
+      res.end();
+    });
+
+    // Manejar errores del proceso
+    child.on('error', (err) => {
+      res.write(`Error: ${err.message}\n`);
+      res.end();
+    });
+
+  } catch (error) {
+    res.write(`Error: ${error.message}\n`);
+    res.end();
   }
 });
 
@@ -286,7 +408,7 @@ app.use((err, req, res, next) => {
 });
 
 // Iniciar el servidor
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 }).on('error', (err) => {
   console.error('Error al iniciar el servidor:', err);
