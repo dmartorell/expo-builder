@@ -101,12 +101,7 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
         if (data.includes('eas-cli@')) {
           easCliInstalled = true;
           terminalInstance.current?.write('\r\nEas-cli ya está instalado. Procediendo con la configuración...\r\n');
-          // Primero nos movemos al directorio del proyecto
-          socketRef.current?.emit('command', `cd ${initialDir}`);
-          // Luego ejecutamos la configuración
-          setTimeout(() => {
-            socketRef.current?.emit('command', 'npx eas-cli build:configure');
-          }, 1000);
+          socketRef.current?.emit('command', 'npx eas-cli build:configure');
         } else if (data.includes('empty') && !easCliInstalled) {
           terminalInstance.current?.write('\r\nInstalando eas-cli globalmente...\r\n');
           socketRef.current?.emit('command', 'npm install --global eas-cli');
@@ -114,12 +109,7 @@ const Terminal2: React.FC<Terminal2Props> = ({ onCommand, initialOutput, initial
           // Esperar a que se instale antes de configurar
           setTimeout(() => {
             terminalInstance.current?.write('\r\nConfigurando Eas Project...\r\n');
-            // Primero nos movemos al directorio del proyecto
-            socketRef.current?.emit('command', `cd ${initialDir}`);
-            // Luego ejecutamos la configuración
-            setTimeout(() => {
-              socketRef.current?.emit('command', 'npx eas-cli build:configure');
-            }, 1000);
+            socketRef.current?.emit('command', 'npx eas-cli build:configure');
           }, 2000);
         }
       });
