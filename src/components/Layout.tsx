@@ -17,7 +17,7 @@ export default function Layout({
       <header className="px-8 py-6 border-b bg-white flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3">
           <ExpoIcon />
-          Expo App Generator
+          Expo Builder
         </h1>
         <nav>{/* Aquí puedes añadir navegación si lo necesitas */}</nav>
       </header>
@@ -49,10 +49,10 @@ export default function Layout({
       </Tabs>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 mt-8">
+      <footer className="border-t border-gray-200 bg-white mt-8">
         <div className="container mx-auto px-4 py-4">
           <p className="text-xs text-gray-500 text-center">
-            © {new Date().getFullYear()} Expo App Generator
+            © {new Date().getFullYear()} Expo Builder
           </p>
         </div>
       </footer>

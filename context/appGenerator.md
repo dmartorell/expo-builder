@@ -1,4 +1,4 @@
-# Expo App Generator
+# Expo Builder
 
 [![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://semver.org)
 ## Description
