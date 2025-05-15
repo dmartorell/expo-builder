@@ -22,7 +22,7 @@ export default function TerminalHeader({ onClear, hasLogs }: TerminalHeaderProps
           className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 text-xs"
           type="button"
         >
-          Clear
+          Limpiar
         </button>
       )}
     </div>

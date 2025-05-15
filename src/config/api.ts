@@ -8,4 +8,5 @@ export const API_ENDPOINTS = {
   DOWNLOAD: (filename: string) => `${API_BASE_URL}/api/download/${filename}`,
   SYSTEM_VERSIONS: `${API_BASE_URL}/api/system-versions`,
   TERMINAL_EXECUTE: `${API_BASE_URL}/api/terminal/execute`,
+  CLEAR_BUILDS: `${API_BASE_URL}/api/clear-builds`,
 } as const; 

@@ -2,7 +2,7 @@ import React from 'react';
 import Terminal from './Terminal';
 import Form from './Form';
 import Builds from './Builds';
-import PreBuilds from './PreBuilds';
+import Eas from './Eas';
 import Documentation from './Documentation';
 
 interface FormData {
@@ -39,7 +39,7 @@ export default function Dashboard({ onLog, logs, setLogs, formData, setFormData 
       </div>
       {/* PreBuilds y Builds */}
       <div className="space-y-6">
-        <PreBuilds />
+        <Eas />
         <Builds />
       </div>
     </div>

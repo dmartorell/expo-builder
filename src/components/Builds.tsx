@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BuildsIcon } from './ui/BuildsIcon';
+import { BuildsIcon } from './ui/icons/BuildsIcon';
 import { Loader2 } from 'lucide-react';
-import { FolderIcon } from './ui/FolderIcon';
+import { FolderIcon } from './ui/icons/FolderIcon';
 import { API_ENDPOINTS } from '../config/api';
 
 export interface Build {
@@ -59,11 +59,54 @@ export default function Builds() {
     }
   };
 
+  const handleClearBuilds = async () => {
+    try {
+      await fetch(API_ENDPOINTS.CLEAR_BUILDS, { method: 'POST' });
+      fetchBuilds();
+      // Disparar evento de limpieza
+      window.dispatchEvent(new Event('builds-cleared'));
+    } catch (error) {
+      console.error('Error clearing builds:', error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow p-6 min-h-[140px] w-full">
       <div className="flex items-center gap-3 mb-4">
         <BuildsIcon />
         <h2 className="text-xl font-semibold text-gray-700">Builds</h2>
+        {builds.length > 0 && (
+          <button
+            onClick={handleClearBuilds}
+            className="ml-auto px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm font-medium flex items-center gap-2 transition-colors"
+            type="button"
+          >
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-red-500"
+            >
+              <path 
+                d="M3 6H5H21" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+              <path 
+                d="M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            Borrar todos
+          </button>
+        )}
       </div>
       <div className="min-h-[50px]">
         {loading ? (

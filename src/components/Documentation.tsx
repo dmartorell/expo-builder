@@ -3,123 +3,135 @@ import React from 'react';
 export default function Documentation() {
   return (
     <div className="p-8 max-w-3xl mx-auto text-gray-800">
-      <h1 className="text-3xl font-bold mb-6">Guía de uso del generador de apps</h1>
-      <div className="mb-8">
-        <div className="mb-2 text-sm text-gray-500 italic">
-          Si ya has generado la app y la tienes instalada en el simulador ve directamente al punto 2.
-        </div>
-        <h2 className="text-2xl font-semibold mt-6 mb-2">1. El generador de apps</h2>
-        <p>
-          El primer paso es descargar el proyecto <b>expoappgenerator</b>. Es, básicamente, un conjunto de archivos de configuración con un script que al ejecutarse genera un proyecto nuevo en Expo con Typescript y linter.
+      <h1 className="text-3xl font-bold mb-6">Guía de uso de Expo Builder</h1>
+
+      <div className="mb-8 bg-white rounded-lg p-6 shadow-sm">
+        <h2 className="text-2xl font-semibold mb-4">¿Qué es el generador de apps?</h2>
+        <p className="mb-4">
+          El generador de apps es una herramienta que automatiza la creación de proyectos React Native con Expo SDK 52. 
+          Está diseñado específicamente para mantener la consistencia con el ecosistema de Alfred Smart, incluyendo:
         </p>
-        <div className="mt-2 mb-2">
-          <b>Asegúrate de tener las versiones mínimas:</b>
-          <ul className="list-disc ml-6">
-            <li>Node <span className="font-mono">&gt;= 18.18.0</span></li>
-            <li>Yarn <span className="font-mono">&gt;= 1.22.22</span></li>
-            <li>Ruby <span className="font-mono">&gt;= 2.6.10p210</span></li>
-            <li>Pod <span className="font-mono">&gt;= 1.16.2</span></li>
-          </ul>
-        </div>
-        <p>Si hay dudas, puedes chequearlo desde la Terminal:</p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`node -v
-yarn -v
-ruby -v`}
-        </pre>
-        <p>
-          Desde el root del appGenerator descargamos dependencias y ejecutamos el script:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`yarn install && yarn create-app`}
-        </pre>
-        <p>
-          El prompt del script nos hará dos preguntas:
-        </p>
-        <ul className="list-disc ml-6">
-          <li>✔ Nombre del proyecto</li>
-          <li>✔ Nombre del package</li>
+        <ul className="list-disc ml-6 space-y-2">
+          <li>Integración con las librerías de Alfred Smart (Verticals y UI Native Components)</li>
+          <li>Configuración automática de herramientas de desarrollo:
+            <ul className="list-disc ml-6 mt-2">
+              <li>ESLint para linting de código</li>
+              <li>TypeScript para tipado estático</li>
+              <li>Git para control de versiones</li>
+              <li>i18n para internacionalización</li>
+            </ul>
+          </li>
+          <li>Estructura de proyecto optimizada y estandarizada</li>
         </ul>
-        <p>
-          Ambos tienen opciones por defecto y pueden cambiarse más tarde.
-        </p>
-        <p>
-          Una vez finalizado el proceso de creación de la app, el proyecto se habrá creado dentro de la carpeta <b>generated</b>. En este punto podemos moverla al directorio que queramos.
-        </p>
-        <p>
-          En este punto tenemos un proyecto Expo (sdk 52) alineado con las librerías de Alfred (Verticals y UI Native Components), con las configuraciones básicas tanto de desarrollo (esLint, Typescript, Git, i18n). Para poder empezar a trabajar sobre el simulador hay que construir la app. Para ello, desde el root del proyecto generado, ejecutamos el comando:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`yarn ios`}
-        </pre>
-        <p>
-          Al final del proceso tendremos corriendo en el simulador de iOS la nueva app base desde la que empezaremos a construir el nuevo producto.
+        <p className="mt-4 text-gray-600">
+          El objetivo es proporcionar una base sólida y consistente para el desarrollo de nuevas aplicaciones, 
+          asegurando que todos los proyectos sigan las mejores prácticas y estándares establecidos.
         </p>
       </div>
 
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">2. Configuración de EAS</h2>
-        <p>
-          Expo EAS (Expo Application Services) es un conjunto de herramientas y servicios proporcionados por Expo para facilitar la compilación, distribución y actualización de aplicaciones en React Native. Para saber más, aquí hay una documentación específica sobre la gestión de builds con EAS.
+        <h2 className="text-2xl font-semibold mb-4">Requisitos previos</h2>
+        <p className="mb-4">
+          Antes de comenzar, asegúrate de tener instaladas las siguientes versiones mínimas:
         </p>
-        <p className="mt-2">Necesitamos instalar globalmente <b>eas-cli</b>:</p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`yarn global add eas-cli
-# o
-npm install --global eas-cli`}
-        </pre>
-        <p>Ahora ejecutamos el comando desde el root de nuestro nuevo proyecto:</p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`npx eas-cli build:configure`}
-        </pre>
-        <p>Seguimos el prompt:</p>
-        <ul className="list-disc ml-6">
-          <li>✔ Would you like to automatically create an EAS project for @smartalfred/your-app? <b>Y</b></li>
-          <li>✔ Which platforms would you like to configure for EAS Build? <b>All</b></li>
+        <ul className="list-disc ml-6 mb-4">
+          <li>Node {'>='} 18.18.0</li>
+          <li>Yarn {'>='} 1.22.22</li>
+          <li>Ruby {'>='} 2.6.10p210</li>
+          <li>Pod {'>='} 1.16.2</li>
         </ul>
-        <p>
-          Ahora, el proyecto ya estará creado y subido al dashboard de la organización smartalfred. El proceso añadirá en el archivo <b>app.json</b> una nueva propiedad con un id del proyecto asociado a EAS. En este punto, debemos copiar el <b>projectId</b>:
+        <p className="mb-4 text-gray-700">
+          El usuario puede comprobar lo que tiene instalado a través de la terminal. Si no está alineado (por abajo), 
+          cancela y instala lo que necesites.
         </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`"extra": {
-  "eas": {
-    "projectId": "00cd6d1d-8735-4478-b9be-f20d370cf787"
-  }
-}`}
-        </pre>
-        <p>
-          Y pegarlo en el <b>projectId</b> del archivo <b>app.config.ts</b> en la carpeta <b>config</b>.
-          Borramos el <b>app.json</b> y colocamos en el root el archivo <b>app.config.ts</b>, que ahora será el que contenga toda la configuración del proyecto en formato TS y con capacidad para inyectarle valores dinámicamente.
-        </p>
-        <p>
-          Hacemos un prebuild para que se sincronicen los últimos cambios hechos:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`yarn prebuild`}
-        </pre>
-        <p>
-          Y confirmamos que la estabilidad del proyecto y las versiones de las dependencias son correctas:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
+      </div>
+
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold mb-4">Fases del proceso</h2>
+        
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">1. Configuración del proyecto</h3>
+            <p className="mb-4">
+              En esta primera fase, el generador crea la estructura base de tu aplicación con todas las configuraciones necesarias 
+              para mantener la consistencia con el resto de apps de Alfred Smart. Durante este proceso:
+            </p>
+            <ul className="list-disc ml-6 space-y-2">
+              <li>Se instalan todas las dependencias necesarias para el desarrollo</li>
+              <li>Se realiza un prebuild del proyecto para generar los archivos nativos</li>
+              <li>Se configura el esqueleto base de la aplicación con la estructura de carpetas optimizada</li>
+              <li>Se aplican las configuraciones de desarrollo (ESLint, TypeScript, etc.)</li>
+            </ul>
+            <p className="mt-4">
+              Todo el proceso se puede seguir en tiempo real a través de la terminal, donde podrás ver cada paso 
+              que se está ejecutando. Una vez completado, el proyecto se guarda en la carpeta <code>generated</code>, 
+              lista para pasar a la siguiente fase.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">2. Configuración EAS</h3>
+            <p className="mb-4">
+              La segunda fase prepara tu proyecto para trabajar con Expo Application Services (EAS), una suite de herramientas 
+              que facilita enormemente el desarrollo y despliegue de aplicaciones React Native. Esta fase te permitirá:
+            </p>
+            <ul className="list-disc ml-6 space-y-2">
+              <li>Enviar versiones de prueba mediante códigos QR</li>
+              <li>Realizar despliegues a producción con un solo comando</li>
+              <li>Implementar actualizaciones over the air (OTA)</li>
+              <li>Gestionar diferentes entornos (desarrollo, preview, producción)</li>
+            </ul>
+            <p className="mt-4">
+              El proceso es semiautomático y requiere tu interacción en dos momentos clave:
+            </p>
+            <ol className="list-decimal ml-6 mt-2 space-y-2">
+              <li>
+                <strong>Configuración del proyecto EAS:</strong> Al dar tu consentimiento, el generador creará un identificador 
+                único para tu proyecto en el entorno de trabajo de Alfred Smart en Expo EAS. Esto permitirá gestionar todas las 
+                builds y actualizaciones desde el dashboard de Expo.
+              </li>
+              <li>
+                <strong>Limpieza y empaquetado:</strong> En este segundo paso, se ejecuta un script que:
+                <ul className="list-disc ml-6 mt-2">
+                  <li>Limpia archivos innecesarios</li>
+                  <li>Formatea el código según los estándares</li>
+                  <li>Empaqueta la aplicación en un archivo ZIP ligero (sin node_modules)</li>
+                </ul>
+                El resultado es un paquete que puedes mover fácilmente a cualquier directorio de trabajo para comenzar el desarrollo.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold mb-4">Y ahora ¿qué hago?</h2>
+        
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">1. Verificar la estabilidad</h3>
+            <p className="mb-4">
+              Ejecuta el siguiente comando para verificar la estabilidad del proyecto y las versiones de las dependencias:
+            </p>
+            <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
 {`npx expo-doctor`}
-        </pre>
-        <p>
-          El dinamismo del <b>app.config.ts</b> permite generar diferentes iconos y nombres de app para cada profile de build (development, preview o production). De esta manera, podemos tener al mismo tiempo en el simulador la app de producción y una de desarrollo perfectamente identificables y sin necesidad de borrar una para instalar la otra.
-        </p>
-        <p>
-          Los settings para conseguir esto están en el <b>app.config.ts</b> del proyecto Alfred Smart Building (Alpha). Se pueden replicar fácilmente. Son necesarios un pack de tres iconos diferentes.
-        </p>
-        <p>
-          Ahora necesitamos actualizar el archivo <b>eas.json</b> para definir los perfiles de las builds que vamos a poder usar:
-        </p>
-        <ul className="list-disc ml-6">
-          <li>development</li>
-          <li>ios-simulator</li>
-          <li>preview</li>
-          <li>production</li>
-        </ul>
-        <p>Sustituye el código del archivo por este otro:</p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm overflow-x-auto whitespace-pre-wrap break-all">
+            </pre>
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800 font-medium mb-2">⚠️ Importante sobre las actualizaciones</p>
+              <p className="text-yellow-700">
+                No se recomienda actualizar todas las dependencias que muestren warnings. Estos mensajes son meramente informativos 
+                y cualquier actualización debe ser consensuada con el equipo. Algunas versiones específicas son necesarias para 
+                mantener la compatibilidad con el ecosistema de Alfred Smart.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">2. Configurar eas.json</h3>
+            <p className="mb-4">
+              Actualiza el archivo <code>eas.json</code> con los siguientes perfiles de build:
+            </p>
+            <pre className="bg-gray-100 rounded p-2 my-2 text-sm overflow-x-auto">
 {`{
   "build": {
     "development": {
@@ -171,46 +183,54 @@ npm install --global eas-cli`}
     }
   }
 }`}
-        </pre>
-      </div>
+            </pre>
+          </div>
 
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">3. Variables de entorno y Google Service Account</h2>
-        <p>
-          En la creación de los builds, el servicio de Expo necesita acceder a todas las librerías para instalarlas. En nuestro caso, las dependencias de Alfred están en NPM como paquetes privados, por lo que necesitamos darle permisos a Expo para poder descargarlas.
-        </p>
-        <p>
-          En el dashboard de Expo del proyecto, vamos a <b>configuration / Environment variables</b> y añadimos una nueva para <b>production</b>, <b>preview</b> y <b>development</b>. La llamaremos <b>NPM_TOKEN</b>. El valor está registrado en Psono, dentro de I+D / Cuenta Developer / npmjs.com. Lo pegamos en Expo y marcamos la visibilidad a <b>Sensitive</b>. Listo.
-        </p>
-      </div>
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">3. Variables de entorno</h3>
+            <p className="mb-4">
+              Para acceder a las librerías privadas de Alfred, necesitas configurar el NPM_TOKEN:
+            </p>
+            <ol className="list-decimal ml-6 space-y-2">
+              <li>
+                Ve al{' '}
+                <a 
+                  href="https://expo.dev/login?redirect_uri=%2Faccounts%2Fsmartalfred%2Fprojects" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  dashboard de Expo del proyecto
+                </a>
+              </li>
+              <li>Navega a Configuration / Environment variables</li>
+              <li>Añade una nueva variable llamada NPM_TOKEN para production, preview y development</li>
+              <li>La key se encuentra en Psono, dentro de I+D / Cuenta Developer / npmjs.com</li>
+              <li>Marca la visibilidad como Sensitive</li>
+            </ol>
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800 font-medium mb-2">⚠️ Nota</p>
+              <p className="text-yellow-700">
+                Si tienes dudas sobre la configuración de las variables de entorno, puedes consultar cómo están declaradas 
+                en otros proyectos como Alfred Smart Building como referencia.
+              </p>
+            </div>
+          </div>
 
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">4. Firebase y Google Services</h2>
-        <p>
-          Para que el servicio de Firebase funcione, el proyecto tiene que tener definidos los archivos de Google y la configuración en el <b>app.config.json</b>. Del mismo modo, para que el despliegue a producción no falle hay que darle a Expo algunas credenciales.
-        </p>
-        <p>
-          Asegúrate tener en el root del proyecto las carpetas <b>googleServices</b> y <b>keystore</b>, además de un archivo <b>credentials.json</b>.
-        </p>
-        <p>
-          La creación de estas credenciales no está descrita en esta guía, pero puedes echarle un ojo a estos enlaces:
-        </p>
-        <ul className="list-disc ml-6">
-          <li>
-            <a href="https://docs.expo.dev/submit/android/" className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
-              Uploading a Google Service Account Key for Play Store Submissions with EAS
-            </a> (para despliegues a store)
-          </li>
-          <li>
-            <a href="https://firebase.google.com/docs/admin/setup" className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">
-              Obtain Google Service Account Keys
-            </a> (para push notifications - Firebase)
-          </li>
-        </ul>
-        <p className="mt-2">
-          En el archivo <b>app.config.json</b> tienes que añadir esta info:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">4. Firebase y Google Services</h3>
+            <p className="mb-4">
+              Asegúrate de tener en el root del proyecto:
+            </p>
+            <ul className="list-disc ml-6 space-y-2">
+              <li>Carpeta <code>googleServices</code></li>
+              <li>Carpeta <code>keystore</code></li>
+              <li>Archivo <code>credentials.json</code></li>
+            </ul>
+            <p className="mt-4">
+              Añade la siguiente configuración en <code>app.config.json</code>:
+            </p>
+            <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
 {`ios: {
   googleServicesFile: './googleServices/GoogleService-Info.plist'
   ...
@@ -226,66 +246,27 @@ plugins: [
   '@react-native-firebase/messaging',
    ...
 ]`}
-        </pre>
+            </pre>
+          </div>
+        </div>
       </div>
 
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">5. Iconos y Splash</h2>
-        <p>
-          Cada proyecto necesita un set de iconos:
-        </p>
-        <ul className="list-disc ml-6">
-          <li><b>adaptive-icon.png</b> (app icon para Android)</li>
-          <li><b>icon.png</b> (app icon para iOS)</li>
-          <li><b>notification-icon.png</b> (icono de notificaciones para Android)</li>
-          <li><b>splash-icon.png</b></li>
-        </ul>
-        <p className="mt-2">
-          Los tamaños son los siguientes:
-        </p>
-        {/* Aquí puedes añadir una tabla o lista de tamaños si lo deseas */}
-        <p className="mt-2">
-          UX-UI debería tomar de referencia estas imágenes y sustituirlas por las del nuevo proyecto.
-          La imagen del adaptive-icon de Android y la del Splash deben ser transparentes. Para definir los colores de fondo en ambos casos se han de setear los valores en el <b>app.config.json</b>:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`adaptiveIcon: {
-  backgroundColor: '#ffffff',
-  foregroundImage: './assets/adaptive-icon.png',
-},
-
-...
-
-plugins: [
-
-  [
-    'expo-splash-screen',
-    {
-      image: './assets/splash-icon.png',
-      resizeMode: 'contain',
-      backgroundColor: '#ffffff',
-      imageWidth: 250,
-    },
-   ],
-]`}
-        </pre>
-      </div>
-
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-2">6. Contenido</h2>
-        <p>
-          El siguiente paso es limpiar y modificar el <b>App.tsx</b> y crear una carpeta <b>src</b> en el root con el contenido de la nueva app.
-        </p>
-        <p>
-          Una vez generado el esqueleto básico de la app siguiendo el esquema de hooks, components, constants, contexts... es posible que, al hacer build, aparezca un error:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm whitespace-pre-wrap break-all">
+        <h2 className="text-2xl font-semibold mb-4">Solución de problemas comunes</h2>
+        
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">Error: NativeEventEmitter</h3>
+            <p className="mb-4">
+              Si encuentras el error:
+            </p>
+            <pre className="bg-gray-100 rounded p-2 my-2 text-sm whitespace-pre-wrap break-all">
 {`Invariant Violation: new NativeEventEmitter() requires a non-null argument., js engine: hermes`}
-        </pre>
-        <p>
-          Normalmente es debido a problemas de caché. Por lo general, con una limpieza agresiva se soluciona:
-        </p>
-        <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
+            </pre>
+            <p className="mb-4">
+              Ejecuta la siguiente secuencia de comandos para limpiar la caché:
+            </p>
+            <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
 {`rm -rf node_modules
 rm -rf ios/Pods
 rm -rf ios/build
@@ -296,10 +277,85 @@ rm -rf yarn.lock
 yarn install
 cd ios && pod install && cd ..
 yarn start --reset-cache`}
-        </pre>
-        <p>
-          Volemos a ejecutar <b>yarn prebuild --clean</b> y <b>yarn ios</b> y la app debería funcionar de manera normal.
-        </p>
+            </pre>
+            <p className="mt-4">
+              Finalmente, ejecuta:
+            </p>
+            <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
+{`yarn prebuild --clean
+yarn ios`}
+            </pre>
+          </div>
+
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold mb-3">Error: Archivos de credenciales no encontrados</h3>
+            <p className="mb-4">
+              Si encuentras errores relacionados con archivos de credenciales faltantes, verifica que tienes la siguiente estructura 
+              en el root de tu proyecto:
+            </p>
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <p className="font-medium mb-2">Estructura de archivos requerida:</p>
+              <ul className="list-disc ml-6 space-y-2">
+                <li>
+                  <code>googleServices/</code>
+                  <ul className="list-disc ml-6 mt-1 text-sm text-gray-600">
+                    <li><code>GoogleService-Info.plist</code> (para iOS)</li>
+                    <li><code>google-services.json</code> (para Android)</li>
+                    <li><code>playStoreServiceAccount.json</code> (para despliegues a Play Store)</li>
+                  </ul>
+                </li>
+                <li>
+                  <code>keystore/</code>
+                  <ul className="list-disc ml-6 mt-1 text-sm text-gray-600">
+                    <li><code>upload-keystore.jks</code> (para firmar la app de Android)</li>
+                  </ul>
+                </li>
+                <li><code>credentials.json</code> (para configuración general)</li>
+              </ul>
+            </div>
+            <p className="mb-4">
+              Estos archivos son necesarios para:
+            </p>
+            <ul className="list-disc ml-6 space-y-2">
+              <li>Configuración de Firebase y notificaciones push</li>
+              <li>Firma de la aplicación para Android</li>
+              <li>Despliegues a las tiendas de aplicaciones</li>
+            </ul>
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800 font-medium mb-2">⚠️ Importante</p>
+              <p className="text-yellow-700 mb-4">
+                La creación de estas credenciales no está descrita en esta guía. Consulta la documentación oficial:
+              </p>
+              <ul className="list-disc ml-6 space-y-2 text-yellow-700">
+                <li>
+                  <a 
+                    href="https://github.com/expo/fyi/blob/main/creating-google-service-account.md" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:text-yellow-800"
+                  >
+                    Uploading a Google Service Account Key for Play Store Submissions with EAS
+                  </a>
+                  <span className="text-sm"> (para despliegues a store)</span>
+                </li>
+                <li>
+                  <a 
+                    href="https://docs.expo.dev/push-notifications/fcm-credentials/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline hover:text-yellow-800"
+                  >
+                    Obtain Google Service Account Keys
+                  </a>
+                  <span className="text-sm"> (para push notifications - Firebase)</span>
+                </li>
+              </ul>
+              <p className="text-yellow-700 mt-4">
+                Asegúrate de mantener estos archivos seguros y nunca los subas a repositorios públicos.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

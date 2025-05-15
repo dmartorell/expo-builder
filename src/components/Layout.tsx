@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { ExpoIcon } from './ui/ExpoIcon';
+import { ExpoIcon } from './ui/icons/ExpoIcon';
 
 export default function Layout({
   dashboardContent,
@@ -30,13 +30,13 @@ export default function Layout({
               value="dashboard"
               className="data-[state=active]:bg-gray-100 data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:shadow-none rounded-full px-6 py-2 text-base text-gray-500 font-normal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 bg-transparent border-none shadow-none"
             >
-              Dashboard
+              Builder
             </TabsTrigger>
             <TabsTrigger
               value="documentation"
               className="data-[state=active]:bg-gray-100 data-[state=active]:text-black data-[state=active]:font-semibold data-[state=active]:shadow-none rounded-full px-6 py-2 text-base text-gray-500 font-normal transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20 focus-visible:ring-offset-2 bg-transparent border-none shadow-none"
             >
-              Documentation
+              Documentación
             </TabsTrigger>
           </TabsList>
         </div>

@@ -471,6 +471,34 @@ app.post('/api/clean-and-zip', async (req, res) => {
   }
 });
 
+// Endpoint para limpiar builds y carpetas generadas
+app.post('/api/clear-builds', async (req, res) => {
+  try {
+    // Limpiar carpeta de builds
+    const buildsPath = path.join(__dirname, 'builds');
+    const files = await fs.promises.readdir(buildsPath);
+    for (const file of files) {
+      await fs.promises.unlink(path.join(buildsPath, file));
+    }
+
+    // Limpiar carpeta generated
+    const generatedPath = path.join(__dirname, 'generated');
+    const generatedDirs = await fs.promises.readdir(generatedPath);
+    for (const dir of generatedDirs) {
+      const dirPath = path.join(generatedPath, dir);
+      const stats = await fs.promises.stat(dirPath);
+      if (stats.isDirectory()) {
+        await fs.promises.rm(dirPath, { recursive: true, force: true });
+      }
+    }
+
+    res.json({ success: true, message: 'Builds and generated folders cleared successfully' });
+  } catch (error) {
+    console.error('Error clearing folders:', error);
+    res.status(500).json({ success: false, error: 'Error clearing folders' });
+  }
+});
+
 // Manejo de errores de multer
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError || err.message.includes('PNG')) {
