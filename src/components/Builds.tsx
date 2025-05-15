@@ -12,6 +12,9 @@ export interface Build {
 export default function Builds() {
   const [builds, setBuilds] = useState<Build[]>([]);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const fetchBuilds = async () => {
     try {
@@ -43,30 +46,77 @@ export default function Builds() {
 
   const handleDownload = async (filename: string) => {
     try {
+      setDownloading(filename);
+      setDownloadProgress(0);
+
       const response = await fetch(API_ENDPOINTS.DOWNLOAD(filename));
-      if (!response.ok) throw new Error('Error al descargar');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.body) throw new Error('No response body');
+
+      // Obtener el tamaño total del archivo
+      const contentLength = response.headers.get('Content-Length');
+      const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+      // Crear un ReadableStream para leer la respuesta
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let received = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        chunks.push(value);
+        received += value.length;
+
+        // Actualizar el progreso
+        if (total) {
+          setDownloadProgress(Math.round((received / total) * 100));
+        }
+      }
+
+      // Concatenar los chunks en un solo Uint8Array
+      const chunksAll = new Uint8Array(received);
+      let position = 0;
+      for (const chunk of chunks) {
+        chunksAll.set(chunk, position);
+        position += chunk.length;
+      }
+
+      // Crear el blob y descargar
+      const blob = new Blob([chunksAll], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error al descargar:', error);
+      if (error instanceof Error) {
+        alert(`Error al descargar el archivo: ${error.message}`);
+      } else {
+        alert('Error desconocido al descargar el archivo');
+      }
+    } finally {
+      setDownloading(null);
+      setDownloadProgress(0);
     }
   };
 
   const handleClearBuilds = async () => {
     try {
+      setClearing(true);
       await fetch(API_ENDPOINTS.CLEAR_BUILDS, { method: 'POST' });
       fetchBuilds();
       // Disparar evento de limpieza
       window.dispatchEvent(new Event('builds-cleared'));
     } catch (error) {
       console.error('Error clearing builds:', error);
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -80,30 +130,35 @@ export default function Builds() {
             onClick={handleClearBuilds}
             className="ml-auto px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm font-medium flex items-center gap-2 transition-colors"
             type="button"
+            disabled={clearing}
           >
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-red-500"
-            >
-              <path 
-                d="M3 6H5H21" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-              <path 
-                d="M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
+            {clearing ? (
+              <Loader2 className="h-4 w-4 text-red-500 animate-spin" />
+            ) : (
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-red-500"
+              >
+                <path 
+                  d="M3 6H5H21" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+                <path 
+                  d="M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
             Borrar todos
           </button>
         )}
@@ -125,15 +180,27 @@ export default function Builds() {
                     <FolderIcon />
                     <span className="text-sm font-medium text-gray-700">{build.name}.zip</span>
                   </div>
-                  <button 
-                    onClick={() => handleDownload(build.filename)}
-                    className="px-4 py-2 bg-black font-semibold text-white text-xs rounded-md hover:bg-gray-800 transition flex items-center gap-2"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Download
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => handleDownload(build.filename)}
+                      disabled={downloading === build.filename}
+                      className="px-4 py-2 bg-black font-semibold text-white text-xs rounded-md hover:bg-gray-800 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {downloading === build.filename ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          {downloadProgress}%
+                        </>
+                      ) : (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          Download
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

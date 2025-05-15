@@ -95,15 +95,18 @@ const InteractiveTerminal: React.FC<InteractiveTerminalProps> = ({ initialOutput
       let easCliInstalled = false;
       let easConfigCompleted = false;
       let configOutput = '';
+      let commandExecuted = false;
 
       socketRef.current?.on('output', (data: string) => {
         configOutput += data;
         
-        if (data.includes('eas-cli@')) {
+        if (data.includes('eas-cli@') && !commandExecuted) {
+          commandExecuted = true;
           easCliInstalled = true;
           terminalInstance.current?.write('\r\nEas-cli ya está instalado. Procediendo con la configuración...\r\n');
           socketRef.current?.emit('command', 'npx eas-cli build:configure');
-        } else if (data.includes('empty') && !easCliInstalled) {
+        } else if (data.includes('empty') && !easCliInstalled && !commandExecuted) {
+          commandExecuted = true;
           terminalInstance.current?.write('\r\nInstalando eas-cli globalmente...\r\n');
           socketRef.current?.emit('command', 'npm install --global eas-cli');
           
@@ -113,25 +116,17 @@ const InteractiveTerminal: React.FC<InteractiveTerminalProps> = ({ initialOutput
           }, 2000);
         }
 
-        // Manejar las preguntas de EAS de manera más precisa y rápida
-        if (data.includes('Would you like to automatically create an EAS project')) {
-          // Enviar la respuesta inmediatamente
-          if (terminalInstance.current) {
-            terminalInstance.current.write('y\r');
-          }
-        }
-
         if (data.includes('Your project is ready to build')) {
           if (!easConfigCompleted) {
             easConfigCompleted = true;
             setTimeout(() => {
-              terminalInstance.current?.write('\r\n¿Deseas actualizar la configuración del proyecto? (S/n): ');
+              terminalInstance.current?.write('\r\nDo you want to proceed with project cleanup and packaging? (Y/n): ');
               
               const handleUserInput = (input: string) => {
                 const cleanInput = input.trim().toLowerCase();
                 
-                if (cleanInput === '' || cleanInput === 's' || cleanInput === 'y' || cleanInput === 'si' || cleanInput === 'yes') {
-                  terminalInstance.current?.write('\r\nActualizando configuración...\r\n');
+                if (cleanInput === '' || cleanInput === 'y') {
+                  terminalInstance.current?.write('\r\nUpdating configuration...\r\n');
                   
                   fetch('http://localhost:4000/api/update-app-config', {
                     method: 'POST',
@@ -150,17 +145,33 @@ const InteractiveTerminal: React.FC<InteractiveTerminalProps> = ({ initialOutput
                   })
                   .then(data => {
                     if (data.success) {
-                      terminalInstance.current?.write('\r\n✅ Configuración actualizada correctamente\r\n');
+                      terminalInstance.current?.write('\r\n✅ Configuration updated successfully\r\n');
                       if (data.details?.projectId) {
                         terminalInstance.current?.write(`\r\nProjectId: ${data.details.projectId}\r\n`);
                       }
-                      terminalInstance.current?.write(`\r\nArchivos actualizados:\r\n`);
-                      terminalInstance.current?.write(`- app.config.ts movido a la raíz\r\n`);
-                      terminalInstance.current?.write(`- app.json eliminado\r\n`);
-                      terminalInstance.current?.write(`- app.config.ts eliminado de la carpeta config\r\n`);
+                      terminalInstance.current?.write(`\r\nUpdated files:\r\n`);
+                      terminalInstance.current?.write(`- app.config.ts moved to root\r\n`);
+                      terminalInstance.current?.write(`- app.json removed\r\n`);
+                      terminalInstance.current?.write(`- app.config.ts removed from config folder\r\n`);
                       
+                      // Mostrar spinner y mensaje de inicio del proceso
+                      terminalInstance.current?.write('\r\n');
+                      // Ocultar el cursor
+                      terminalInstance.current?.write('\x1b[?25l');
+                      
+                      let spinnerChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+                      let spinnerIndex = 0;
+                      const spinnerInterval = setInterval(() => {
+                        if (terminalInstance.current) {
+                          // Borrar la línea anterior
+                          terminalInstance.current.write('\x1b[1A\x1b[2K');
+                          terminalInstance.current.write(`${spinnerChars[spinnerIndex]} Processing\r\n`);
+                          spinnerIndex = (spinnerIndex + 1) % spinnerChars.length;
+                        }
+                      }, 80);
+
                       // Eliminar node_modules y crear ZIP
-                      return fetch('http://localhost:4000/api/clean-and-zip', {
+                      fetch('http://localhost:4000/api/clean-and-zip', {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
@@ -168,33 +179,39 @@ const InteractiveTerminal: React.FC<InteractiveTerminalProps> = ({ initialOutput
                         body: JSON.stringify({
                           appName: initialDir.split('/').pop()
                         }),
+                      })
+                      .then(response => response.json())
+                      .then(data => {
+                        // Detener el spinner
+                        clearInterval(spinnerInterval);
+                        // Borrar la última línea del spinner
+                        terminalInstance.current?.write('\x1b[1A\x1b[2K');
+                        
+                        if (data.success) {
+                          terminalInstance.current?.write(`\r\n✅ node_modules removed\r\n`);
+                          terminalInstance.current?.write(`✅ Project saved as ZIP in builds/${data.zipName}\r\n`);
+                          // Disparar evento de nuevo build
+                          window.dispatchEvent(new Event('new-build-created'));
+                        } else {
+                          throw new Error(data.error || 'Error desconocido');
+                        }
+                      })
+                      .catch(error => {
+                        // Detener el spinner en caso de error
+                        clearInterval(spinnerInterval);
+                        // Borrar la última línea del spinner
+                        terminalInstance.current?.write('\x1b[1A\x1b[2K');
+                        
+                        console.error('Error:', error);
+                        terminalInstance.current?.write(`\r\n❌ Error: ${error.message}\r\n`);
                       });
                     } else {
                       throw new Error(data.error || 'Error desconocido');
                     }
                   })
-                  .then(response => response.json())
-                  .then(data => {
-                    if (data.success) {
-                      terminalInstance.current?.write(`\r\n✅ node_modules eliminado\r\n`);
-                      terminalInstance.current?.write(`✅ Proyecto guardado como ZIP en builds/${data.zipName}\r\n`);
-                      // Disparar evento de nuevo build
-                      window.dispatchEvent(new Event('new-build-created'));
-                    }
-                  })
                   .catch(error => {
                     console.error('Error:', error);
                     terminalInstance.current?.write(`\r\n❌ Error: ${error.message}\r\n`);
-                  })
-                  .finally(() => {
-                    if (socketRef.current) {
-                      socketRef.current.disconnect();
-                    }
-                    if (terminalInstance.current) {
-                      terminalInstance.current.options.disableStdin = true;
-                      terminalInstance.current.options.cursorBlink = false;
-                      terminalInstance.current.write('\x1b[?25l');
-                    }
                   });
                 } else {
                   terminalInstance.current?.write('\r\nOperación cancelada por el usuario\r\n');

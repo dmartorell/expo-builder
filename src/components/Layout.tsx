@@ -49,7 +49,7 @@ export default function Layout({
       </Tabs>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white mt-8">
+      <footer className="border-t border-gray-100 mt-8">
         <div className="container mx-auto px-4 py-4">
           <p className="text-xs text-gray-500 text-center">
             © {new Date().getFullYear()} Expo Builder

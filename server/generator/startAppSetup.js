@@ -29,22 +29,22 @@ const archiver = require('archiver');
  */
 async function startAppSetup({ appName, packageName, iconPaths = {} }) {
   try {
-    console.log(`Iniciando generación de la app: ${appName}`);
+    console.log(`Starting app generation: ${appName}`);
     if (!isValidPackageName(packageName)) {
-      throw new Error('El package name no es válido. Debe tener formato reverse domain.');
+      throw new Error('Invalid package name. It must have a reverse domain format.');
     }
     const parsedAppName = appName.toLowerCase().replace(/\s/g, '-');
     const projectPath = `generated/${parsedAppName}`;
 
     // Verificar si el directorio ya existe
     if (fs.existsSync(projectPath)) {
-      throw new Error(`El directorio '${projectPath}' ya existe. Por favor, elige otro nombre para tu aplicación o elimina el directorio existente.`);
+      throw new Error(`Directory '${projectPath}' already exists. Please choose another name for your application or delete the existing directory.`);
     }
 
     await executeCommand(
       `yarn create expo-app ${projectPath} --template expo-template-blank-typescript`,
-      `Generando proyecto Expo ${parsedAppName}...`,
-      'Proyecto creado correctamente.',
+      `Generating Expo project ${parsedAppName}...`,
+      'Project created successfully.',
       null,
       '.'
     );
@@ -71,15 +71,15 @@ async function startAppSetup({ appName, packageName, iconPaths = {} }) {
 
     await executeCommand(
       `yarn install --cwd ${projectPath}`,
-      'Instalando dependencias...',
-      'Dependencias instaladas.',
+      'Installing dependencies...',
+      'Dependencies installed.',
       null,
       '.'
     );
     await executeCommand(
       `cd ${projectPath} && npx expo prebuild`,
-      'Ejecutando prebuild...',
-      'Prebuild completado.',
+      'Running prebuild...',
+      'Prebuild completed.',
       null,
       '.'
     );

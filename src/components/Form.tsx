@@ -35,7 +35,7 @@ export default function Form({ onLog, formData, setFormData }: FormProps) {
       
       if (data.done) {
         // Verificar si el proceso terminó con éxito (no hay errores en los logs)
-        const completedSuccessfully = data.logs.some((log: string) => log.includes('Proceso finalizado.'));
+        const completedSuccessfully = data.logs.some((log: string) => log.includes('Process completed.'));
         if (completedSuccessfully) {
           window.dispatchEvent(new Event('app-created'));
         }
@@ -70,14 +70,14 @@ export default function Form({ onLog, formData, setFormData }: FormProps) {
       const data = await res.json();
       if (data.ok && data.id) {
         currentProcessId.current = data.id;
-        onLog?.('Proceso iniciado. Mostrando logs...', data.id);
+        onLog?.('Process started. Showing logs...', data.id);
         // Iniciar la verificación del estado del proceso
         checkProcessStatus(data.id);
       } else {
-        onLog?.('❌ ' + (data.error || 'Error desconocido.'));
+        onLog?.('❌ ' + (data.error || 'Unknown error.'));
       }
     } catch (err) {
-      onLog?.('❌ Error de red o backend.');
+      onLog?.('❌ Network or backend error.');
     }
   };
 

@@ -9,7 +9,7 @@ const { startAppSetup } = require('./startAppSetup');
  */
 async function generateApp({ appName, packageName, iconPaths = {} }) {
   try {
-    console.log(`Iniciando generación de la app: ${appName}`);
+    console.log(`Starting app generation: ${appName}`);
     
     // Llamar a startAppSetup con los parámetros correctos
     await startAppSetup({
@@ -18,9 +18,9 @@ async function generateApp({ appName, packageName, iconPaths = {} }) {
       iconPaths
     });
 
-    console.log('Proceso finalizado.');
+    console.log('Process completed.');
   } catch (error) {
-    console.error('❌ Error en la generación: ' + error.message);
+    console.error('❌ Generation error: ' + error.message);
     throw error;
   }
 }

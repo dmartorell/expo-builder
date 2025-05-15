@@ -48,7 +48,8 @@ const upload = multer({
 });
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // Almacenamiento de logs por proceso
 const processLogs = {};
@@ -253,14 +254,69 @@ app.get('/api/generated-apps', (req, res) => {
 
 // Endpoint para servir archivos ZIP
 app.get('/api/download/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, 'builds', filename);
+  try {
+    const filename = req.params.filename;
+    const buildsDir = path.join(__dirname, 'builds');
+    const filePath = path.join(buildsDir, filename);
 
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: 'Archivo no encontrado' });
+    // Asegurarse de que la carpeta builds existe
+    if (!fs.existsSync(buildsDir)) {
+      fs.mkdirSync(buildsDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(filePath)) {
+      console.error(`File not found: ${filePath}`);
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Obtener el tamaño del archivo
+    const stat = fs.statSync(filePath);
+
+    // Configurar headers para la descarga
+    res.setHeader('Content-Length', stat.size);
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    // Manejar solicitudes de rango (para descargas parciales)
+    const range = req.headers.range;
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+      const chunksize = (end - start) + 1;
+      const file = fs.createReadStream(filePath, { start, end });
+      
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${stat.size}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'application/zip'
+      });
+      
+      file.pipe(res);
+    } else {
+      // Crear stream de lectura con un tamaño de buffer optimizado
+      const stream = fs.createReadStream(filePath, { highWaterMark: 64 * 1024 }); // 64KB chunks
+
+      // Manejar errores del stream
+      stream.on('error', (error) => {
+        console.error(`Error streaming file: ${error}`);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Error streaming file' });
+        }
+      });
+
+      // Pipe el archivo al response
+      stream.pipe(res);
+    }
+  } catch (error) {
+    console.error(`Error in download endpoint: ${error}`);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-
-  res.download(filePath, filename);
 });
 
 // Endpoint para obtener versiones del sistema
@@ -450,24 +506,39 @@ app.post('/api/update-app-config', async (req, res) => {
   }
 });
 
-// Endpoint para limpiar y comprimir el proyecto
+// Endpoint para limpiar y crear ZIP
 app.post('/api/clean-and-zip', async (req, res) => {
   try {
     const { appName } = req.body;
     if (!appName) {
-      return res.status(400).json({ success: false, error: 'Nombre de la app no proporcionado' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'App name is required' 
+      });
     }
 
     const projectPath = path.join(__dirname, 'generated', appName);
-    if (!fs.existsSync(projectPath)) {
-      return res.status(404).json({ success: false, error: 'Proyecto no encontrado' });
-    }
-
+    const { cleanAndZip } = require('./generator/cleanAndZip');
+    
     const result = await cleanAndZip(projectPath);
-    res.json(result);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        zipName: result.zipName
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error || 'Error creating ZIP file'
+      });
+    }
   } catch (error) {
-    console.error('Error en clean-and-zip:', error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error in clean-and-zip:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
   }
 });
 
