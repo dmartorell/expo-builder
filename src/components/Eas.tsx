@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { EasIcon } from './ui/icons/EasIcon';
 import { Build } from './Builds';
 import { Loader2 } from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
 import { FolderIcon } from './ui/icons/FolderIcon';
-import InteractiveTerminal from './InteractiveTerminal/InteractiveTerminal';
+import InteractiveTerminal from './InteractiveTerminal';
 
 interface EasProps {
   logs: string[];
