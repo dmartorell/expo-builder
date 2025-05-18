@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import ImageFileInput from './ui/ImageFileInput';
-import { API_ENDPOINTS } from '../config/api';
+import { Input } from "./input";
+import { Button } from "./button";
+import ImageFileInput from './ImageFileInput';
+import { API_ENDPOINTS } from '../../config/api';
 
 interface FormData {
   projectName: string;

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import Dashboard from './components/Dashboard';
-import Documentation from './components/Documentation';
+import { useState } from 'react';
+import Documentation from './screens/DocumentationScreen';
 import Layout from './components/Layout';
 import { useAppLogs } from './hooks/useAppLogs';
+import DashboardScreen from './screens/DashboardScreen';
 
 interface FormData {
   projectName: string;
@@ -29,7 +29,7 @@ export default function App() {
   return (
     <Layout
       dashboardContent={
-        <Dashboard 
+        <DashboardScreen 
           onLog={handleLog} 
           logs={logs} 
           setLogs={setLogs} 

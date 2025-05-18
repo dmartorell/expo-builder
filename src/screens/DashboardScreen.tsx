@@ -1,8 +1,9 @@
 import React from 'react';
-import Terminal from './Terminal/Terminal';
-import BuildsCard from './BuildsCard';
-import EasCard from './EasCard';
-import Form from './ui/Form';
+import BuildsCard from '@/components/BuildsCard';
+import EasCard from '@/components/EasCard';
+import Terminal from '@/components/Terminal/Terminal';
+import Form from '@/components/ui/Form';
+
 
 interface FormData {
   projectName: string;
@@ -13,7 +14,7 @@ interface FormData {
   iconSplash: File | null;
 }
 
-interface DashboardProps {
+interface DashboardScreenProps {
   onLog: (log: string) => void;
   logs: string[];
   setLogs: React.Dispatch<React.SetStateAction<string[]>>;
@@ -21,7 +22,7 @@ interface DashboardProps {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 }
 
-export default function Dashboard({ onLog, logs, setLogs, formData, setFormData }: DashboardProps) {
+export default function DashboardScreen({ onLog, logs, setLogs, formData, setFormData }: DashboardScreenProps) {
   return (
     <div className="flex flex-col gap-6 py-8 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row gap-6">

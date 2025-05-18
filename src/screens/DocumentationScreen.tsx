@@ -1,6 +1,4 @@
-import React from 'react';
-
-export default function Documentation() {
+export default function DocumentationScreen() {
   return (
     <div className="p-8 max-w-3xl mx-auto text-gray-800">
       <h1 className="text-3xl font-bold mb-6">Guía de uso de Expo Builder</h1>
@@ -114,7 +112,7 @@ export default function Documentation() {
               Ejecuta el siguiente comando para verificar la estabilidad del proyecto y las versiones de las dependencias:
             </p>
             <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`npx expo-doctor`}
+              {`npx expo-doctor`}
             </pre>
             <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-yellow-800 font-medium mb-2">⚠️ Importante sobre las actualizaciones</p>
@@ -132,57 +130,57 @@ export default function Documentation() {
               Actualiza el archivo <code>eas.json</code> con los siguientes perfiles de build:
             </p>
             <pre className="bg-gray-100 rounded p-2 my-2 text-sm overflow-x-auto">
-{`{
-  "build": {
-    "development": {
-      "channel": "development",
-      "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "APP_VARIANT": "development"
-      }
-    },
-    "ios-simulator": {
-      "channel": "ios-simulator",
-      "extends": "development",
-      "ios": {
-        "simulator": true
-      }
-    },
-    "preview": {
-      "android": {
-        "buildType": "apk"
-      },
-      "channel": "preview",
-      "distribution": "internal",
-      "env": {
-        "APP_VARIANT": "preview"
-      },
-      "ios": {
-        "credentialsSource": "remote"
-      }
-    },
-    "production": {
-      "android": {
-        "credentialsSource": "local"
-      },
-      "autoIncrement": true,
-      "channel": "production"
-    }
-  },
-  "cli": {
-    "appVersionSource": "remote",
-    "version": ">= 15.0.10"
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccountKeyPath": "./googleServices/playStoreServiceAccount.json",
-        "track": "alpha"
-      }
-    }
-  }
-}`}
+              {`{
+                "build": {
+                  "development": {
+                    "channel": "development",
+                    "developmentClient": true,
+                    "distribution": "internal",
+                    "env": {
+                      "APP_VARIANT": "development"
+                    }
+                  },
+                  "ios-simulator": {
+                    "channel": "ios-simulator",
+                    "extends": "development",
+                    "ios": {
+                      "simulator": true
+                    }
+                  },
+                  "preview": {
+                    "android": {
+                      "buildType": "apk"
+                    },
+                    "channel": "preview",
+                    "distribution": "internal",
+                    "env": {
+                      "APP_VARIANT": "preview"
+                    },
+                    "ios": {
+                      "credentialsSource": "remote"
+                    }
+                  },
+                  "production": {
+                    "android": {
+                      "credentialsSource": "local"
+                    },
+                    "autoIncrement": true,
+                    "channel": "production"
+                  }
+                },
+                "cli": {
+                  "appVersionSource": "remote",
+                  "version": ">= 15.0.10"
+                },
+                "submit": {
+                  "production": {
+                    "android": {
+                      "serviceAccountKeyPath": "./googleServices/playStoreServiceAccount.json",
+                      "track": "alpha"
+                    }
+                  }
+                }
+              }`}
             </pre>
           </div>
 
@@ -231,21 +229,21 @@ export default function Documentation() {
               Añade la siguiente configuración en <code>app.config.json</code>:
             </p>
             <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`ios: {
-  googleServicesFile: './googleServices/GoogleService-Info.plist'
-  ...
-}
+              {`ios: {
+                googleServicesFile: './googleServices/GoogleService-Info.plist'
+                ...
+              }
 
-android: {
-  googleServicesFile: './googleServices/google-services.json',
-  ...
-},
+              android: {
+                googleServicesFile: './googleServices/google-services.json',
+                ...
+              },
 
-plugins: [
-  '@react-native-firebase/app',
-  '@react-native-firebase/messaging',
-   ...
-]`}
+              plugins: [
+                '@react-native-firebase/app',
+                '@react-native-firebase/messaging',
+                ...
+              ]`}
             </pre>
           </div>
         </div>
@@ -261,29 +259,29 @@ plugins: [
               Si encuentras el error:
             </p>
             <pre className="bg-gray-100 rounded p-2 my-2 text-sm whitespace-pre-wrap break-all">
-{`Invariant Violation: new NativeEventEmitter() requires a non-null argument., js engine: hermes`}
+              {`Invariant Violation: new NativeEventEmitter() requires a non-null argument., js engine: hermes`}
             </pre>
             <p className="mb-4">
               Ejecuta la siguiente secuencia de comandos para limpiar la caché:
             </p>
             <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`rm -rf node_modules
-rm -rf ios/Pods
-rm -rf ios/build
-rm -rf android/build
-rm -rf android/app/build
-rm -rf .expo
-rm -rf yarn.lock
-yarn install
-cd ios && pod install && cd ..
-yarn start --reset-cache`}
+              {`rm -rf node_modules
+              rm -rf ios/Pods
+              rm -rf ios/build
+              rm -rf android/build
+              rm -rf android/app/build
+              rm -rf .expo
+              rm -rf yarn.lock
+              yarn install
+              cd ios && pod install && cd ..
+              yarn start --reset-cache`}
             </pre>
             <p className="mt-4">
               Finalmente, ejecuta:
             </p>
             <pre className="bg-gray-100 rounded p-2 my-2 text-sm">
-{`yarn prebuild --clean
-yarn ios`}
+              {`yarn prebuild --clean
+              yarn ios`}
             </pre>
           </div>
 
