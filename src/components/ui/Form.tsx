@@ -14,18 +14,30 @@ interface FormData {
 }
 
 interface FormProps {
-  onLog?: (log: string, processId?: string) => void;
+  onLog?: (message: string, processId?: string) => void;
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  logs: string[];
 }
 
-export default function Form({ onLog, formData, setFormData }: FormProps) {
+export default function Form({ onLog, formData, setFormData, logs }: FormProps) {
   // Refs para los inputs file
   const iconIosRef = useRef<HTMLInputElement>(null);
   const iconAndroidRef = useRef<HTMLInputElement>(null);
   const iconNotificationRef = useRef<HTMLInputElement>(null);
   const iconSplashRef = useRef<HTMLInputElement>(null);
   const currentProcessId = useRef<string | null>(null);
+
+  // Determinar si hay un proceso en marcha basado en los logs
+  const isProcessing = logs.some(log => 
+    (log.includes('Generating Expo project') ||
+    log.includes('Installing dependencies') ||
+    log.includes('Running prebuild') ||
+    log.includes('Creating ZIP file') ||
+    log.includes('Removing node_modules') ||
+    log.includes('Cleaning up project')) &&
+    !logs.some(log => log.includes('Process completed'))
+  );
 
   // Función para verificar el estado del proceso
   const checkProcessStatus = async (processId: string) => {
@@ -83,19 +95,25 @@ export default function Form({ onLog, formData, setFormData }: FormProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev: FormData) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof FormData) => {
     const file = e.target.files?.[0] || null;
-    setFormData(prev => ({ ...prev, [field]: file }));
+    setFormData((prev: FormData) => ({ ...prev, [field]: file }));
   };
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">Configura tu proyecto</h2>
-        <Button type="submit" className="bg-black text-white font-semibold hover:bg-gray-800 transition">
+        <Button 
+          type="submit" 
+          disabled={isProcessing}
+          className={`bg-black text-white font-semibold hover:bg-gray-800 transition ${
+            isProcessing ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''
+          }`}
+        >
           Generar App
         </Button>
       </div>

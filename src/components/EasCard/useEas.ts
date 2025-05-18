@@ -13,11 +13,21 @@ export const useEas = ({ logs }: UseEasProps) => {
   const [currentApp, setCurrentApp] = useState<string>('');
 
   // Determinar si hay un proceso en marcha basado en los logs
-  const isProcessing = logs.some(log => 
-    log.includes('Comprobando versión de eas-cli') ||
+  const isProcessing = showTerminal || logs.some(log => 
+    // Procesos de EAS
+    (log.includes('Comprobando versión de eas-cli') ||
     log.includes('Instalando eas-cli globalmente') ||
     log.includes('Configurando Eas Project') ||
-    log.includes('Updating configuration')
+    log.includes('Updating configuration') ||
+    // Procesos de generación de app
+    log.includes('Generating Expo project') ||
+    log.includes('Installing dependencies') ||
+    log.includes('Running prebuild') ||
+    log.includes('Creating ZIP file') ||
+    // Procesos de limpieza
+    log.includes('Removing node_modules') ||
+    log.includes('Cleaning up project')) &&
+    !logs.some(log => log.includes('Process completed'))
   );
 
   const getGeneratedApps = async () => {

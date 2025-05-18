@@ -29,7 +29,7 @@ export default function DashboardScreen({ onLog, logs, setLogs, formData, setFor
         {/* Columna izquierda: Formulario */}
         <div className="flex-1">
           <section className="bg-white rounded-xl shadow p-6 flex flex-col h-[820px] overflow-y-auto">
-            <Form onLog={onLog} formData={formData} setFormData={setFormData} />
+            <Form onLog={onLog} formData={formData} setFormData={setFormData} logs={logs} />
           </section>
         </div>
         {/* Terminal */}

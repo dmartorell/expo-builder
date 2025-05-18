@@ -9,9 +9,7 @@ const { execSync, spawn } = require('child_process');
 const http = require('http');
 const { Server } = require('socket.io');
 const pty = require('node-pty-prebuilt-multiarch');
-const os = require('os');
 const { updateAppConfig } = require('./generator/updateAppConfig');
-const { cleanAndZip } = require('./generator/cleanAndZip');
 
 const app = express();
 const server = http.createServer(app);

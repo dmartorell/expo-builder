@@ -49,21 +49,12 @@ const EasCard: React.FC<EasCardProps> = ({ logs }) => {
                     disabled={isProcessing}
                     className={`px-4 py-2 ml-8 font-semibold text-xs rounded-md transition flex items-center gap-2 ${
                       isProcessing 
-                        ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+                        ? 'bg-gray-100 cursor-not-allowed text-gray-400'
                         : 'bg-black text-white hover:bg-gray-800'
                     }`}
                   >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Procesando...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRightIcon />
-                        Start EAS Config
-                      </>
-                    )}
+                    <ArrowRightIcon />
+                    Start EAS Config
                   </button>
                 </div>
               </div>
