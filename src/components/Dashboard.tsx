@@ -1,5 +1,5 @@
 import React from 'react';
-import Terminal from './Terminal';
+import Terminal from './Terminal/Terminal';
 import Form from './Form';
 import Builds from './Builds';
 import Eas from './Eas';
@@ -15,7 +15,7 @@ interface FormData {
 }
 
 interface DashboardProps {
-  onLog: (log: string, processId?: string) => void;
+  onLog: (log: string) => void;
   logs: string[];
   setLogs: React.Dispatch<React.SetStateAction<string[]>>;
   formData: FormData;
@@ -39,7 +39,7 @@ export default function Dashboard({ onLog, logs, setLogs, formData, setFormData 
       </div>
       {/* PreBuilds y Builds */}
       <div className="space-y-6">
-        <Eas />
+        <Eas logs={logs} />
         <Builds />
       </div>
     </div>

@@ -1,51 +1,44 @@
-import React, { useRef, useEffect } from 'react';
-import TerminalLogs from './TerminalLogs';
-import TerminalHeader from './TerminalHeader';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS } from '@/config/api';
+import { useRef, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
 
-interface TerminalLogsProps {
-  logs: string[];
-}
-
-const Check = () => <span className="mr-2 text-green-500 text-2xl">✓</span>;
-
-// Función para limpiar códigos ANSI
-const cleanAnsiCodes = (text: string) => {
-  return text.replace(/\[\d+m/g, '').replace(/\[39m/g, '');
-};
-
-// Paso de la terminal
-interface Step {
+// Types
+export interface Step {
   type: 'spinner' | 'log';
   status?: 'start' | 'success' | 'fail';
   message: string;
 }
 
-interface TerminalProps {
+// Utility functions
+export const cleanAnsiCodes = (text: string) => {
+  return text.replace(/\[\d+m/g, '').replace(/\[39m/g, '');
+};
+
+interface UseTerminalProps {
   logs: string[];
-  setLogs: React.Dispatch<React.SetStateAction<string[]>>;
+  setLogs: Dispatch<SetStateAction<string[]>>;
+  loadSystemVersions?: boolean;
 }
 
-export default function Terminal({ logs, setLogs }: TerminalProps) {
+export function useTerminal({ logs, setLogs, loadSystemVersions = true }: UseTerminalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const versionsLoadedRef = useRef(false);
 
-  // Efecto para auto-scroll
+  // Auto-scroll effect
   useEffect(() => {
     if (containerRef.current && logs.length > 0) {
-      // Usar requestAnimationFrame para asegurar que el DOM se ha actualizado
+      // Use requestAnimationFrame to ensure DOM has been updated
       requestAnimationFrame(() => {
         if (containerRef.current) {
           containerRef.current.scrollTop = containerRef.current.scrollHeight;
         }
       });
     }
-  }, [logs]); // Se ejecuta cada vez que cambian los logs
+  }, [logs]);
 
-  // Manejador de scroll para propagar al padre
+  // Scroll handler to propagate to parent
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
-    // Solo hacer scroll de la página principal si hay logs y estamos cerca del final
+    // Only scroll the main page if there are logs and we're near the end
     if (logs.length > 0) {
       const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 50;
       if (isNearBottom) {
@@ -57,21 +50,21 @@ export default function Terminal({ logs, setLogs }: TerminalProps) {
     }
   };
 
-  // Procesa los logs en pasos
-  const steps = React.useMemo(() => {
+  // Process logs into steps
+  const steps = useMemo(() => {
     const result: Step[] = [];
-    let lastLog = ''; // Para evitar duplicados consecutivos
+    let lastLog = ''; // To avoid consecutive duplicates
     
     logs.forEach((log) => {
-      // Solo evitamos duplicados consecutivos
+      // Only avoid consecutive duplicates
       if (log === lastLog) return;
       lastLog = log;
 
-      // Limpiar códigos ANSI del log
+      // Clean ANSI codes from the log
       const cleanLog = cleanAnsiCodes(log);
 
       if (cleanLog.startsWith('SPINNER_START:')) {
-        // Si hay un spinner activo, márcalo como fail (o podrías cerrarlo de otra forma)
+        // If there's an active spinner, mark it as fail (or close it in another way)
         const lastSpinner = [...result].reverse().find(s => s.type === 'spinner' && s.status === 'start');
         if (lastSpinner) {
           lastSpinner.status = 'fail';
@@ -79,34 +72,35 @@ export default function Terminal({ logs, setLogs }: TerminalProps) {
         const newSpinner: Step = { type: 'spinner', status: 'start', message: cleanLog.replace('SPINNER_START:', '').trim() };
         result.push(newSpinner);
       } else if (cleanLog.startsWith('SPINNER_SUCCESS:')) {
-        // Marca el último spinner activo como success
+        // Mark the last active spinner as success
         const lastSpinner = [...result].reverse().find(s => s.type === 'spinner' && s.status === 'start');
         if (lastSpinner) {
           lastSpinner.status = 'success';
         }
       } else if (cleanLog.startsWith('SPINNER_FAIL:')) {
-        // Marca el último spinner activo como fail
+        // Mark the last active spinner as fail
         const lastSpinner = [...result].reverse().find(s => s.type === 'spinner' && s.status === 'start');
         if (lastSpinner) {
           lastSpinner.status = 'fail';
         }
       } else {
-        // Log normal
+        // Normal log
         result.push({ type: 'log', message: cleanLog });
       }
     });
     return result;
   }, [logs]);
 
+  // Effect to fetch system versions
   useEffect(() => {
-    if (versionsLoadedRef.current) return;
+    if (!loadSystemVersions || versionsLoadedRef.current) return;
 
     const fetchSystemVersions = async () => {
       try {
         const response = await fetch(API_ENDPOINTS.SYSTEM_VERSIONS);
         const versions = await response.json();
         setLogs(prevLogs => {
-          // Solo añadir las versiones si no están ya en los logs
+          // Only add versions if they're not already in the logs
           if (!prevLogs.some(log => log.includes('Versiones instaladas'))) {
             return [
               'Versiones instaladas:',
@@ -122,23 +116,22 @@ export default function Terminal({ logs, setLogs }: TerminalProps) {
         });
         versionsLoadedRef.current = true;
       } catch (error) {
-        console.error('Error al obtener versiones:', error);
+        console.error('Error fetching versions:', error);
       }
     };
 
     fetchSystemVersions();
-  }, [setLogs]);
+  }, [setLogs, loadSystemVersions]);
 
   const handleClear = () => {
     setLogs([]);
   };
 
-  return (
-    <>
-      <TerminalHeader onClear={handleClear} hasLogs={logs.length > 0} />
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <TerminalLogs logs={logs} />
-      </div>
-    </>      
-  );
-} 
+  return {
+    containerRef,
+    handleScroll,
+    steps,
+    handleClear,
+    hasLogs: logs.length > 0
+  };
+}
